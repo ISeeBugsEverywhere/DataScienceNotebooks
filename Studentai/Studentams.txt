@@ -1,0 +1,5 @@
+Čia kiekvienas galite susikurti savo asmeninį aplanką (folderį)
+kuriame galėsite saugoti savo Jupyter Notebookus
+Taip pat galėsite (!!!) pasiekti kolegų darbus
+
+Tai - PUBLIC repozitorija.
