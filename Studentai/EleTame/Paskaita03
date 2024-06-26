@@ -1,3 +1,0 @@
-i= int(input('Įveskite skaičių'))
-ats = 'Lyginis' if i % 2 == 0 else 'Nelyginis'
-print(ats)*
