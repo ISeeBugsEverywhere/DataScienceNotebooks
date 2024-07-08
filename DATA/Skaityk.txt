@@ -1,0 +1,5 @@
+Testas
+failas, skirtas
+skaitymo testavimui
+öäπ <- įdomūs simboliai
+Ė, kas čia?
