@@ -1,1 +1,25 @@
-['Vilnius,', 'Sopeil', '4', '.d', '(bns).', 'Į', 'Europos', 'Ątnemalrap', '(ep)', 'Įležrib', 'Išrinktas', 'Sujinigriv', 'Sinkevičius', 'Lėd', 'Ministro', 'Oileftrop', 'Grįžtų', 'Į', 'Lietuvą,', 'Okas', 'Opozicinės', 'Ųtarkomed', 'Sąjungos', 'N):dr):v„', 'Lietuvos“', 'Siredyl', 'Saulius', '.silenrevks', 'Taip', 'Sij', 'Kalbėjo', 'Op', 'Ketvirtadienį', 'Oisukyv', 'Partijos', 'Sobydl):v', 'Posėdžio,', 'Rep', 'Kurį', 'Satnitrivtap', 'Kandidatų', 'Į', 'Seimą', ',sašarąs', 'Programa.', '.v„', 'Sinkevičius,', 'Ign):d):k', 'Jis', 'Ary', 'Mūsų', 'Sodnamok', 'Bendruomenės', ',syr):n', 'Dalyvaus', 'Samadūb', '141', ',ejojicizop', 'Ir', 'Ugiej', 'Rinkimai', 'Sub', 'Sėkmingi,', 'Ri', 'Mes', 'Emisūb', 'Valdančiojoje', ',ejomuguad', 'Ir', 'Emisėrut', 'Vieną', 'Ši', 'Ministrų', ',ųileftrop', 'Didelė', ',ėbymikit', 'Kad', 'Uikot', 'Atveju', 'Sujinigriv', 'Taps', 'Sėbysuairyv', 'Nariu,', 'Ri', 'Tada', 'Išįrg', 'Į', ',“ąvuteil', '–', 'Sm):tsil):nruž', 'Sakė', '.s', 'Skvernelis.']
+1; 12; 7.3634 
+2; 7; 2.6428 
+3; 13; 1.8115 
+4; 5; 5.7596 
+5; 4; 6.1081 
+6; 11; 3.4255 
+7; 6; 9.1274 
+8; 20; 3.7581 
+9; 7; 2.6955 
+10; 11; 2.4275 
+11; 14; 3.2288 
+12; 21; 2.925 
+13; 9; 3.6374 
+14; 20; 9.5599 
+15; 23; 3.6151 
+16; 26; 4.6449 
+17; 12; 1.175 
+18; 21; 1.1794 
+19; 26; 6.0336 
+20; 18; 2.3647 
+21; 4; 6.4306 
+22; 14; 5.9748 
+23; 6; 8.2042 
+24; 7; 7.4961 
+25; 21; 4.3798 
