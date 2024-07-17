@@ -1,0 +1,32 @@
+Sveiki!
+
+Labai džiaugiamės, kad jau visai greitai pradėsite mokytis Duomenų mokslas: nuo Python programavimo pagrindų iki duomenų analizės praktikos vakariniuose mokymuose ir papildysite mūsų studentų gretas.
+
+Trumpa informacija apie mokymus:
+Mokymų pradžia: 2024.06.17 (pirmadienis).
+Laikas: pirmadieniais, trečiadieniais ir ketvirtadieniais 18:00-22:00 val.                           
+
+Minimalūs tvarkaraščio pakeitimai: liepos 10, 11 ir 15 dienomis paskaitos nevyks, tad mokymų pabaiga planuojama 2025 m. balandžio 16 dieną.
+
+Mokymasis vyks nuotoliniu būdu.
+Prie paskaitų jungiamės per Zoom platformą. Nuoroda (galios visų mokymų metu): https://liedm.zoom.us/j/97212588646 
+
+Iki paskaitos pradžios prašau įdiegti savo kompiuteriuose Zoom aplikaciją, kurią galite parsisiųsti adresu: https://zoom.us/download.
+Prisegu pre-kurso medžiagą, kurioje nurodyta, kokias programas Jums reikėtų atsisiųsti į savo kompiuterius, taip pat naudinga medžiaga mokymų pradžiai.
+
+Prašau patvirtinti, jog gavote informaciją atsakydami man į šį laišką. Taip pat labai prašome informuoti mane dėl numatomų paskaitų praleidimų kaip įmanoma anksčiau.
+
+Kilus papildomiems klausimams - drąsiai kreipkitės!
+Linkiu geros mokymų pradžios!
+-- 
+
+Pagarbiai / Sincerely
+
+
+____________________
+
+Eglė Verseckaitė
+Mokymų koordinatorė /
+Training coordinator
++370 677 43 993
+egle@vilniuscoding.lt
