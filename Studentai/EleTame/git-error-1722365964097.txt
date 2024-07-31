@@ -1,0 +1,8 @@
+> git pull --tags origin main
+From https://github.com/ISeeBugsEverywhere/DataScienceNotebooks
+ * branch            main       -> FETCH_HEAD
+error: The following untracked working tree files would be overwritten by merge:
+	Pipfile
+	Pipfile.lock
+Please move or remove them before you merge.
+Aborting
