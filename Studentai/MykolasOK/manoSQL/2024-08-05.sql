@@ -44,4 +44,37 @@ select count(*),
 	end as aktyvumas
 	from customer group by active ;
 
+SELECT rating, GROUP_CONCAT(title separator ', ') 
+	from film 
+	group by rating;
+
+SELECT SUBSTRING(first_name, 1, 3) from actor;
+
+SELECT first_name, last_name from actor a 
+	union all
+SELECT first_name, last_name from customer c; 
+
+SELECT first_name, last_name, 'actor' from actor a 
+	union all
+SELECT first_name, last_name, 'customer' from customer c; 
+
+-- Parašykite SQL užklausą, pateikiančią klientų id, sumokamą mokestį už nuomą. 
+-- Tuos klientus, kurie sumoka už nuomą vienu kartu virš 10, pažymėkite kaip „Virš 10“, 
+-- o išleidžiančius iki 10, pažymėkite „Iki 10“. Surūšiuokite pagal nuomos mokestį mažėjimo tvarka.
+
+SELECT customer_id, amount,
+	IF (amount>10,'Virš 10','Iki 10') as ar_brangiai
+	from payment
+	WHERE amount>0
+	order by amount DESC ;
+
+-- Pateikite klientų sąrašą (lentelė payment) su mokėjimo data 
+-- ir didžiausiu kiekvieno kliento mokėjimu, 
+-- bet tik tų klientų, kurių didžiausias mokėjimas tą dieną yra šiame sąraše: 2.99, 3.99 ir 4.99.
+-- Galima naudoti: in, having, date(), max()
+
+SELECT date(payment_date), customer_id, MAX(amount) as did 
+	from payment
+	group by date(payment_date), customer_id
+	having did IN( 2.99, 3.99, 4.99 );
 
