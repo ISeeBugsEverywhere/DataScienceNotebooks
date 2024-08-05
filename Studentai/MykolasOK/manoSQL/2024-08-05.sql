@@ -50,13 +50,14 @@ select rating, group_concat(title separator ', ')
 
 select substring(first_name, 1, 3) from actor;
 
-select first_name, last_name from actor a 
+select first_name, last_name from actor
 	union all
-select first_name, last_name from customer c; 
+select first_name, last_name from customer; 
 
-select first_name, last_name, 'actor' from actor a 
+select first_name, last_name, 'actor' from actor
 	union all
-select first_name, last_name, 'customer' from customer c; 
+select first_name, last_name, 'customer' from customer
+	order by last_name, first_name; 
 
 -- Parašykite SQL užklausą, pateikiančią klientų id, sumokamą mokestį už nuomą. 
 -- Tuos klientus, kurie sumoka už nuomą vienu kartu virš 10, pažymėkite kaip „Virš 10“, 
@@ -79,3 +80,11 @@ select customer_id, date(payment_date), max(amount) as didelis
 	having didelis in( 2.99, 3.99, 4.99 )
 	order by payment_date, customer_id;
 
+-- Kitų studentų bandymas - naudoja 'where' prieš grupavimą.
+-- Neeatitinka užduoties sąlygos, 
+-- nes leidžia tuos, kur didžiausias mokėjimas ne iš sąrašo:
+select customer_id, date(payment_date), max(amount) as didelis
+	from payment
+	where amount in( 2.99, 3.99, 4.99 )
+	group by date(payment_date), customer_id
+	order by payment_date, customer_id;
