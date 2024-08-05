@@ -88,3 +88,51 @@ select customer_id, date(payment_date), max(amount) as didelis
 	where amount in( 2.99, 3.99, 4.99 )
 	group by date(payment_date), customer_id
 	order by payment_date, customer_id;
+
+-- Tema: 'join'
+
+select * from customer;
+select * from payment;
+
+select first_name, last_name, amount
+	from payment p
+	inner join customer c
+	on p.customer_id=c.customer_id;
+
+select customer_id, first_name, last_name, amount
+	from payment as p
+	inner join customer as c
+	using (customer_id);
+
+select customer_id as id, first_name as `First name`, last_name as `Last name`, amount as Amount
+	from payment as p
+	inner join customer as c
+	using (customer_id)
+	where amount>10;
+
+select customer_id id, first_name `First name`, last_name `Last name`, amount Amount
+	from payment p
+	inner join customer c
+	using (customer_id)
+	where amount>10
+	order by last_name;
+
+-- Kiek kiekvienas darbuotojas surinko klientų apmokėjimų (kiekis, suma)? 
+-- [lentelės] (staff, payment)
+
+select sum(p.amount), count(p.amount), st.first_name, st.last_name
+	from staff st
+	left join payment p
+	using (staff_id)
+	group by st.staff_id;
+
+-- Suraskite, kuriuos klientus kuris darbuotojas aptarnavo?
+-- [lentelės] (staff, customer)
+
+select	st.first_name `St. first`, st.last_name `St. last`,
+		c.first_name `Cust. first`, c.last_name `Cust. last`
+	from staff st
+	left join customer c
+	using (store_id)
+	order by c.last_name, c.first_name;
+
