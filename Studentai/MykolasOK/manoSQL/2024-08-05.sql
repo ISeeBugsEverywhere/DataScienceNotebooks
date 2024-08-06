@@ -8,8 +8,7 @@ select actor_id as id,
 	from actor
 	order by id asc;
 	
-Kas antro aktoriaus vardą parašykite mažosiomis raidėmis, 
-kas trečio - pavardę.
+-- Kas antro aktoriaus vardą parašykite mažosiomis raidėmis, kas trečio - pavardę.
 
 select actor_id as id,
 	if(actor_id mod 2 = 0, lower(first_name), first_name) as vardas,
@@ -72,7 +71,7 @@ select customer_id, amount,
 -- Pateikite klientų sąrašą (lentelė payment) su mokėjimo data 
 -- ir didžiausiu kiekvieno kliento mokėjimu [tą dieną], 
 -- bet tik tų klientų, kurių didžiausias mokėjimas tą dieną yra šiame sąraše: 2.99, 3.99 ir 4.99.
--- Rekomenduojama naudoti: having, in(), date(), max()
+-- Rekomenduojama naudoti: having, in(), date(), max().
 
 select customer_id, date(payment_date), max(amount) as didelis
 	from payment
@@ -81,8 +80,9 @@ select customer_id, date(payment_date), max(amount) as didelis
 	order by payment_date, customer_id;
 
 -- Kitų studentų bandymas - naudoja 'where' prieš grupavimą.
--- Neeatitinka užduoties sąlygos, 
--- nes leidžia tuos, kur didžiausias mokėjimas ne iš sąrašo:
+-- Neeatitinka užduoties sąlygos, nes įtraukia ir tuos klintus, 
+-- kur didžiausias mokėjimas ne iš sąrašo:
+
 select customer_id, date(payment_date), max(amount) as didelis
 	from payment
 	where amount in( 2.99, 3.99, 4.99 )
@@ -120,7 +120,7 @@ select customer_id id, first_name `First name`, last_name `Last name`, amount Am
 -- Kiek kiekvienas darbuotojas surinko klientų apmokėjimų (kiekis, suma)? 
 -- [lentelės] (staff, payment)
 
-select sum(p.amount), count(p.amount), st.first_name, st.last_name
+select count(p.amount), sum(p.amount), st.first_name, st.last_name
 	from staff st
 	left join payment p
 	using (staff_id)
@@ -136,3 +136,27 @@ select	st.first_name `St. first`, st.last_name `St. last`,
 	using (store_id)
 	order by c.last_name, c.first_name;
 
+-- Visi vardai ir pavardės taisyklingai iš didžiosios:
+
+select
+	CONCAT(
+        UPPER(SUBSTRING(st.first_name, 1, 1)),
+        LOWER(SUBSTRING(st.first_name, 2, LENGTH(st.first_name)))
+    ) AS `Staff first n.`, 
+	CONCAT(
+        UPPER(SUBSTRING(st.last_name, 1, 1)),
+        LOWER(SUBSTRING(st.last_name, 2, LENGTH(st.last_name)))
+    ) AS `Staff last n.`,
+	CONCAT(
+        UPPER(SUBSTRING(c.first_name, 1, 1)),
+        LOWER(SUBSTRING(c.first_name, 2, LENGTH(c.first_name)))
+    ) AS `Customer first n.`, 
+	CONCAT(
+        UPPER(SUBSTRING(c.last_name, 1, 1)),
+        LOWER(SUBSTRING(c.last_name, 2, LENGTH(c.last_name)))
+    ) AS `Customer last n.`
+	from staff st
+	left join customer c
+	using (store_id)
+	order by c.last_name, c.first_name;
+	
