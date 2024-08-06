@@ -31,5 +31,15 @@ SELECT CONCAT(title,' ',release_year) from film;
 SELECT LENGTH(description)-LENGTH(replace(description ,' ',''))+1 as ZODZIAI, description, title from film order by ZODZIAI desc; 
 
 SELECT * FROM film limit 5;
-SELECT rental_duration as `Nuomos trukmė`, count(*) as N, ROUND(AVG(`length`)) as `Vid. ilgis` FROM film GROUP BY rental_duration ;
-
+SELECT rental_duration as `Nuomos trukmė`, count(*) as N, ROUND(AVG(`length`)) as `Vid. ilgis` 
+	FROM film GROUP BY rental_duration ORDER BY `Nuomos trukmė`;
+SELECT rental_duration as `Nuomos trukmė`, rental_rate as `Kaina`, count(*) as Kiekis, ROUND(AVG(`length`)) as `Vid. ilgis` 
+	FROM film GROUP BY rental_duration, rental_rate ORDER BY `Nuomos trukmė`;
+SELECT rental_rate as `Kaina`, count(*) as Kiekis
+	FROM film GROUP BY rental_rate ORDER BY Kaina;
+SELECT SUM(rental_rate) as Kaina
+	FROM film GROUP BY rental_rate ORDER BY Kaina;
+SELECT SUM(rental_rate) as Kaina, rating
+	FROM film 
+	WHERE title LIKE 'A%'
+	GROUP BY rating;
