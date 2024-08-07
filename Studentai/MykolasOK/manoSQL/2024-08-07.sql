@@ -187,3 +187,29 @@ delete from Klientai_tmp_MOK
 
 select * from Klientai_tmp_MOK;
 
+-- Toliau dirbame su db „works“:
+
+-- https://data.gov.lt/datasets/1620/data/DarboUzmokestis2014/
+-- "G1" Pradinis arba pagrindinis
+-- "G2" Vidurinis (Povidurinis profesinis, Specialusis vidurinis, Aukštesnysis)
+-- "G3" Aukštasis (bakalauro studijos)
+-- "G4" Aukštasis (magistro studijos ir doktorantūra)
+
+select issilavinimas, round(avg(bdu_spalio))
+	from DUS2014N
+	group by issilavinimas;
+
+-- Kiek dalyvavo apklausose vyrų, moterų 2014 ir 2018 metais? 
+-- Parodykite absoliučius dydžius, jų skirtumą, bei pridėkite stulpelį pokytis procentais.
+
+select lytis, round(avg(bdu_spalio)) from DUS2014N group by lytis;
+select lytis, round(avg(bdu_spalio)) from DUS2018N group by lytis;
+
+create temporary table palyginimas_MOK
+select lytis, avg(bdu_spalio)/3.4528 as A2014 from DUS2014N group by lytis
+	join
+select lytis, avg(bdu_spalio) as A2018 from DUS2018N group by lytis
+	using( lytis );
+
+select *, A2018-A2014 as skirtumas, round(100*skirtumas/A2014) as proc from palyginimas_MOK;
+
