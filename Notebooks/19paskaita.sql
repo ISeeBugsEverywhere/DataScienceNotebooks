@@ -1,3 +1,4 @@
+use sakila;
 -- • Pateikite adresus su pašto kodais, miesto pavadinimu bei
 -- šalimi. (address, city, country)
 select address, postal_code, city, country
@@ -7,7 +8,7 @@ inner join country using (country_id);
 -- • Koks vidutinis filmų ilgis pagal kategorijas? (film,
 -- film_category, category)
 
-select name, avg(length) from film
+select name, avg(length), avg(rental_duration) from film
 join film_category using (film_id)
 join category using (category_id)
 group by name;
@@ -53,3 +54,109 @@ payment
 join customer using (customer_id)
 where last_name = 'white' and first_name = 'Betty'
 order by payment_date desc limit 1;
+
+
+select * from
+(select * from actor) as T;
+
+select * from
+(select * from actor
+order by actor_id desc
+limit 10) as T
+limit 2;
+
+select 2/(select avg(length) from film);
+
+select * from actor
+where first_name in (select first_name from actor
+where first_name like 'a%');
+
+-- 
+create table Klientai
+(
+	id int auto_increment not null primary key,
+    vardas char(255),
+    pavardė char(255)
+);
+
+-- pašalinimas
+drop table Klientai;
+
+select * from Klientai;
+
+insert into Klientai (vardas, pavardė)
+values ('Petras', 'Petraitis'),
+('Unė Vardenė', 'UPS');
+
+
+create temporary table Klientai_temp
+(
+id int not null primary key,
+vardas varchar(255),
+kompanija varchar(100)
+);
+
+select * from Klientai_temp;
+
+create temporary table ATS
+select name, avg(length), avg(rental_duration) from film
+join film_category using (film_id)
+join category using (category_id)
+group by name;
+
+select * from ATS;
+
+delete from ATS
+where name = 'Action';
+
+drop table ATS;
+
+select * from ATS;
+
+alter table ATS
+add STULPELIS float;
+
+update ATS
+set STULPELIS=(`avg(length)`+`avg(rental_duration)`)/100
+where name like 'D%';
+;
+-- WORKS DB
+
+-- kiek dalyvavo apklausose vyrų, moterų 2014 ir 2018 metais? Parodykite absoliučius dydžius, jų skirtumą, bei pridėkite stulpelį dar, kur pokytis būtų procentais.
+-- lytis, M - male, f - female
+
+select *,Kiekis2018-Kiekis2014 as Skirtumas, (Kiekis2018-Kiekis2014)/Kiekis2014*100.0 as `Δ[%]` from
+(select lytis, count(*) as Kiekis2014
+from DUS2014N
+group by lytis) as T
+inner join
+(select lytis, count(*) as Kiekis2018
+from DUS2018N
+group by lytis) as D
+using (lytis);
+
+
+-- Suraskite vidutinį vyrų, moterų atlyginimą 2014 metais ir 2018 metais. parodykite procentinį skirtumą tarp metų.
+-- stulpelis bdu_spalio
+-- spalio mėnesio atlyginimas
+-- O čia atlyginimai
+
+select *, (A18-A14)/A14*100.0 as `Δ[%]` from
+(select lytis, avg(bdu_spalio)/3.4528 as A14
+from DUS2014N
+group by lytis) as T
+inner join
+(select lytis, avg(bdu_spalio) as A18
+from DUS2018N
+group by lytis) as D
+using (lytis);
+
+
+
+
+
+
+
+
+
+
