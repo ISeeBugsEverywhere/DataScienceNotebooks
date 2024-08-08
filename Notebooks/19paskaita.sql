@@ -5,6 +5,8 @@ select address, postal_code, city, country
 from address
 inner join city using (city_id)
 inner join country using (country_id);
+
+
 -- • Koks vidutinis filmų ilgis pagal kategorijas? (film,
 -- film_category, category)
 
