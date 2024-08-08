@@ -122,31 +122,12 @@ where name like 'D%';
 ;
 -- WORKS DB
 
--- kiek dalyvavo apklausose vyrų, moterų 2014 ir 2018 metais? Parodykite absoliučius dydžius, jų skirtumą, bei pridėkite stulpelį dar, kur pokytis būtų procentais.
--- lytis, M - male, f - female
-
-select *,Kiekis2018-Kiekis2014 as Skirtumas, (Kiekis2018-Kiekis2014)/Kiekis2014*100.0 as `Δ[%]` from
-(select lytis, count(*) as Kiekis2014
-from DUS2014N
-group by lytis) as T
-inner join
-(select lytis, count(*) as Kiekis2018
-from DUS2018N
-group by lytis) as D
-using (lytis);
-
-
--- Suraskite vidutinį vyrų, moterų atlyginimą 2014 metais ir 2018 metais. parodykite procentinį skirtumą tarp metų.
--- stulpelis bdu_spalio
--- spalio mėnesio atlyginimas
--- O čia atlyginimai
-
 select *, (A18-A14)/A14*100.0 as `Δ[%]` from
-(select lytis, avg(bdu_spalio)/3.4528 as A14
+(select lytis, round(avg(bdu_spalio)/3.4528) as A14
 from DUS2014N
 group by lytis) as T
 inner join
-(select lytis, avg(bdu_spalio) as A18
+(select lytis, round(avg(bdu_spalio)) as A18
 from DUS2018N
 group by lytis) as D
 using (lytis);
