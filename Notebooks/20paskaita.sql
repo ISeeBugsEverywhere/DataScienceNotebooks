@@ -114,6 +114,13 @@ using (MD);
 -- MMA 2014 metais - 1000 Lt. MMA 2018 metais - 400 €.
 -- Suskaičiuokite, kiek kiekvienoje grupėje buvo respondentų, tiek 2014, tiek 2018 metais.
 
-
+select case
+when bdu_spalio < 1000 then 'Iki MMA'
+when bdu_spalio >= 1000 and bdu_spalio < (select avg(bdu_spalio) from DUS2014N) then 'Trap MMA ir VDU'
+else 'Virš VDU'
+end as Rėžiai,
+count(*) as Kiekis2014
+from DUS2014N
+group by Rėžiai;
 
 
