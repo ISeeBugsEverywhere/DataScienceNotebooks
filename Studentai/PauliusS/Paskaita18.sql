@@ -517,13 +517,15 @@ INNER JOIN
 
 
 
-SELECT lytis, COUNT(*) AS count, '2018' AS year
-FROM DUS2018N
-GROUP BY lytis
-INNER JOIN
-SELECT lytis, COUNT(*) AS count, '2014' AS year
-FROM DUS2014N
-GROUP BY lytis;
+SELECT lytis, COUNT(*) AS count, year
+FROM (
+    SELECT lytis, '2018' AS year
+    FROM DUS2018N
+    UNION ALL
+    SELECT lytis, '2014' AS year
+    FROM DUS2014N
+) AS combined
+GROUP BY lytis, year;
 
 
 
