@@ -153,4 +153,44 @@ order by kiekis desc;
 
 
 
+select profesija, bdu_metinis
+from DUS2014N
+group by profesija
+order by bdu_metinis desc
+limit 5;
+
+
+select profesija, bdu_metinis
+from DUS2014N
+group by profesija
+order by bdu_metinis asc
+limit 5;
+
+select profesija, bdu_metinis
+from DUS2018N
+group by profesija
+order by bdu_metinis asc
+limit 5;
+
+select profesija, bdu_metinis
+from DUS2014N
+where bdu_metinis between (select avg(bdu_metinis)*0.9 from DUS2014N) and (select avg(bdu_metinis)*1.1 from DUS2014N)
+order by bdu_metinis desc;
+
+select profesija, bdu_metinis
+from DUS2014N
+where bdu_metinis between (select avg(bdu_metinis)*0.99985 from DUS2014N) and (select avg(bdu_metinis)*1.00015 from DUS2014N)
+order by bdu_metinis desc;
+
+select avg(bdu_metinis) from DUS2014N;
+-- 26026.65
+
+
+select profesija, bdu_metinis
+from DUS2018N
+where bdu_metinis between (select avg(bdu_metinis)*0.9999 from DUS2018N) and (select avg(bdu_metinis)*1.0001 from DUS2018N)
+order by bdu_metinis desc;
+
+select avg(bdu_metinis) from DUS2018N;
+-- 9782.74
 
