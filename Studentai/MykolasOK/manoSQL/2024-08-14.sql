@@ -1,5 +1,4 @@
 -- Vakar dienos paskutinė užklausa:
-
 select *, C/(select count(*) from sa)*100 as '%' from
 (select * from
 (select device_brand as B, count(*) as C
@@ -18,3 +17,6 @@ where device_brand != ''
 group by device_brand
 order by C desc
 limit 5) as T2)) as T3;
+
+---------------
+
