@@ -2,17 +2,11 @@ def pout(a, limit=5):
     if len(a) > limit:
         print(f'Rodoma {limit} eilutės iš {len(a)}')
     for k,i in enumerate(a):
-        if k > limit:
+        if k > limit-1:
             break
-    l = []
-    for k in i:
-        f = f'{str(k):^18.18}'
-        l.append(f)
-    t = '|'+'|'.join(l)+'|'
-    print(t)
-
-
-
-
-
-
+        l = []
+        for n in i:
+            f = f'{str(n):^16.16}'
+            l.append(f)
+        t = f'|{k:^3}|'+'|'.join(l)+'|'
+        print(t)
