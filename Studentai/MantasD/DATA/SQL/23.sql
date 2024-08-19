@@ -98,7 +98,7 @@ group by rusis
 order by proc desc limit 5;
 -- pateikite šių eismo įvykių pokytį tarp 2020 ir 2021 metų, procentais, barh grafiku.
 
-select schema1, (s.proc-f.proc)/f.proc*100 as skir from 
+select schema1, round((s.proc-f.proc)/f.proc*100,2) as skir from 
 (select count(*) as proc, schema1 from EismIvyk2020
 group by schema1
 order by proc desc) as f
