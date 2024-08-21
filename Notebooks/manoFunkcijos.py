@@ -6,7 +6,7 @@ def pout(a, limit=5):
             break
         l = []
         for n in i:
-            f = f'{str(n):^16.16}'
+            f = f'{str(n):^14.14}'
             l.append(f)
         t = f'|{k:^3}|'+'|'.join(l)+'|'
         print(t)
