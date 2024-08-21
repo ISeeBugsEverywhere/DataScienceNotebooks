@@ -1,4 +1,4 @@
-def pout(a, limit=20):
+def pout(a, limit=5):
     if len(a) > limit:
         print(f'Rodoma {limit} eilutės iš {len(a)}')
     for k,i in enumerate(a):
