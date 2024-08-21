@@ -39,3 +39,34 @@ FROM (
 		ROW_NUMBER() OVER (PARTITION BY id) AS rn FROM works.autopliuslt
 ) as T1
 WHERE rn=1;
+
+-- Paprastasis vidurkis:
+SELECT avg(cast(replace(price,' ','') as float)) vidKaina
+FROM works.autopliuslt;
+
+-- Vidurkis atmetus besikartojančius:
+SELECT avg(cast(replace(price,' ','') as float)) vidKaina
+FROM ( SELECT id, price, 
+ROW_NUMBER() OVER (PARTITION BY id) AS rn FROM works.autopliuslt
+) as T1 WHERE rn=1;
+
+# suraskite visus gamintojus, kurių  modelių vidutinė kaina yra didesnė už vidutinę
+
+select gamintojas, avg(cast(replace(price,' ','') as float)) vidKaina
+from autopliuslt
+group by gamintojas;
+
+select * from 
+(select gamintojas,	
+	round(avg(cast(replace(price,' ','') as float))) gamintojoVidurkis,
+	GROUP_CONCAT(cast(replace(price,' ','') as float)) kainos
+from autopliuslt
+group by gamintojas) as vidurkiai
+where gamintojoVidurkis>(SELECT avg(cast(replace(price,' ','') as float)) bendrasisVidurkis
+FROM works.autopliuslt);
+
+# visų automobilių kainą.
+# Iš jų atrinkite 5-kis brangiausius gamintojus, ir suraskite jų 
+# parduodamų modelių vidutinį amžių.
+# taip pat atvaizduokite su boxplot'ais šių 5-kių gamintojų parduodamų modelių kainų pasiskirstymą.
+
