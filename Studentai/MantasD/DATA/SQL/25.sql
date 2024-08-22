@@ -45,3 +45,13 @@ select hour(cast(OCCUR_TIME as time)) as t, count(*) from nypd
 where STATISTICAL_MURDER_FLAG = 1
 group by t order by count(*) desc;
 
+select * from nypd;
+
+-- # turite informaciją apie užpuoliko lytį, amžiaus grupę, rasę, bei tą pačią infromaciją apie auką. 
+-- # kokia vyraujanti aukos rasė, amžiaus grupė, lytis, užpuoliko amž grupė, rasė, lytis?
+-- # Ar užpuolikai renkasi savo amžiaus, lyties, rasės aukas ar ne?
+
+select PERP_RACE as PR, PERP_SEX, PERP_AGE_GROUP, VIC_RACE, VIC_SEX, VIC_AGE_GROUP, count(*) from nypd
+where PERP_RACE<> '' and PERP_RACE <> 'UNKNOWN' and PERP_AGE_GROUP <> 'UNKNOWN'
+group by PERP_RACE, PERP_SEX, PERP_AGE_GROUP, VIC_RACE, VIC_SEX, VIC_AGE_GROUP
+order by count(*) desc limit 5;
