@@ -71,7 +71,7 @@ class SolarAnalyzer():
         return self.name
             
     def get_pce(self):
-        self.pce = float(np.absolute(np.min(self.col4)))
+        self.pce = float(abs(min(self.col4)))
         return self.pce
     
     def get_jsc(self):
