@@ -10,3 +10,5 @@ def pout(a, limit=5):
             l.append(f)
         t = f'|{k:^3}|'+'|'.join(l)+'|'
         print(t)
+    
+    
