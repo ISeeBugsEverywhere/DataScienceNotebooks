@@ -88,10 +88,6 @@ class SolarAnalyzer():
         self.jsc = abs(self.col3[idx])
         return self.jsc
         
-        # self.smallest = np.min(np.absolute(self.col1))
-        # self.idx_jsc = self.col1.index(self.smallest)
-        # self.jsc = float(np.absolute(self.col3[self.idx_jsc]))
-        # return self.jsc
     
     def get_Uoc(self):
         min_abs = list(map(lambda x: abs(0-x), self.col3))
@@ -105,12 +101,8 @@ class SolarAnalyzer():
             idx = idx - 1
         
         self.Uoc = abs(self.col1[idx])
-        
-        
-        # self.smallest = np.min(np.absolute(self.col3))
-        # self.idx_Uoc = self.col3.index(self.smallest)
-        # self.Uoc = float(np.absolute(self.col1[self.idx_Uoc]))
         return self.Uoc
+    
     
     def get_FF(self):
         return (self.get_pce() / (self.get_jsc() * self.get_Uoc())) *100
