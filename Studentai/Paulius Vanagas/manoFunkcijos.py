@@ -18,6 +18,7 @@ class SolarAnalyzer():
         
         self.skirtukas = skirtukas
         self.f=f
+        #self.pce1=-1
         
         failas = open(self.f, mode='r', encoding='utf-8')
         self.turinys = failas.readlines()[1:]
