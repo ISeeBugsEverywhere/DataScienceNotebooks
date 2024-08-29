@@ -21,10 +21,12 @@ class SolarAnalyzer():
         self.__I = []
         self.__j = []
         self.__P = []
-        print('SolarAnalyzer.\nSkaitomas failas:',failas)
+        # print('SolarAnalyzer()\nSkaitomas failas:',failas)
         failoObj = open(failas,mode='r') # Duomenų failas.
         for i in range(0,header):
-            print('Praleista:',failoObj.readline(),end='')
+            pass
+            failoObj.readline()
+            # print('Praleista:',failoObj.readline(),end='')
         for eil in failoObj:
             emas=eil.split(sep) # 'emas'=Eilutės MASyvas.
             # print(emas)
@@ -36,11 +38,6 @@ class SolarAnalyzer():
             except ValueError:
                 print('Nepavyko atpažinti:',eil)
         failoObj.close()
-
-        # print(self.__U)
-        # print(self.__I)
-        # print(self.__j)
-        # print(self.__P)
 
         self.n=len(self.__P)
 
@@ -57,7 +54,7 @@ class SolarAnalyzer():
                 minimum = abs(self.__U[i])
                 minimumIndex = i
         self.jsc = abs(self.__j[minimumIndex])
-        print(f'Mažiausias |U|={minimum}, i={minimumIndex}, |j|={self.jsc}')
+        # print(f'Mažiausias |U|={minimum}, i={minimumIndex}, |j|={self.jsc}')
 
         # U(oc) - maksimali įtampa [V]:
         minimumIndex=0
@@ -67,11 +64,10 @@ class SolarAnalyzer():
                 minimum = abs(self.__U[i])
                 minimumIndex = i
         self.Uoc = abs(self.__U[minimumIndex])
-        print(f'Mažiausias |j|={minimum}, i={minimumIndex}, |U|={self.Uoc}')
+        # print(f'Mažiausias |j|={minimum}, i={minimumIndex}, |U|={self.Uoc}')
 
         # FF - naudingumo koeficientas, palyginus su idealia SE [%]
         self.FF = (self.pce*100)/(self.jsc*self.Uoc)
 
-        print('SolarAnalyzer() atlikta.')
-
+        # print(f"Rezultatas: '{self.medžiaga}' {self.pce} {self.jsc} {self.Uoc} {self.FF}")
 
