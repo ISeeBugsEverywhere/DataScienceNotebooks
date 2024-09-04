@@ -1,0 +1,96 @@
+{
+	// Place your global snippets here. Each snippet is defined under a snippet name and has a scope, prefix, body and 
+	// description. Add comma separated ids of the languages where the snippet is applicable in the scope field. If scope 
+	// is left empty or omitted, the snippet gets applied to all languages. The prefix is what is 
+	// used to trigger the snippet and the body will be expanded and inserted. Possible variables are: 
+	// $1, $2 for tab stops, $0 for the final cursor position, and ${1:label}, ${2:another} for placeholders. 
+	// Placeholders with the same ids are connected.
+	// Example:
+	// "Print to console": {
+	// 	"scope": "javascript,typescript",
+	// 	"prefix": "log",
+	// 	"body": [
+	// 		"console.log('$1');",
+	// 		"$2"
+	// 	],
+	// 	"description": "Log output to console"
+	// }
+	"Warnings": {
+		"scope": "python,jupyter",
+		"prefix": ":warnings",
+		"body": [
+			"import warnings",
+			"warnings.filterwarnings('ignore')"
+		],
+		"description": "Disable Warnings"
+	},
+	"Streamlit":{
+		"scope":"python",
+		"prefix":":streamlit",
+		"body":[
+			"import streamlit as st",
+			"import pandas as pd",
+			"import numpy as np",
+			"import plotly.express as px",
+			"import mysql.connector as cnt",
+			"import matplotlib.pyplot as plt",
+			"#streamlit page config:",
+			"st.set_page_config(page_icon=':bar_chart', page_title='DEMO STREAMLIT MAP', layout='centered')"
+		],
+		"description":"Streamlit template"
+	},
+	"BARS2": {
+		"scope": "python,jupyter",
+		"prefix": ":bar2",
+		"body": [
+			"x=np.arange(0, len(?)) # ? - list with labels",
+			"w = 0.25",
+			"?.bar(x-w/2, ?, label=?, color='xkcd:indigo', width=w)",
+			"?.bar(x+w/2, ?, label=?, color='xkcd:deep orange', width=w)",
+			"?.set_xticks(x)",
+			"?.set_xticklabels(?)"
+		],
+		"description": "Bar charts (2)"
+	},
+	"BARS3": {
+		"scope": "python,jupyter",
+		"prefix": ":bar3",
+		"body": [
+			"x=np.arange(0, len(?)) # ? - list with labels",
+			"w = 0.25",
+			"?.bar(x-w, ?,  label=?, color='xkcd:indigo', width=w)",
+			"?.bar(x, ?,  label=?, color='xkcd:deep orange', width=w)",
+			"?.bar(x+w, ?,  label=?, color='xkcd:deep blue', width=w)",
+			"?.set_xticks(x)",
+			"?.set_xticklabels(?)"
+		],
+		"description": "Bar charts (3)"
+	},
+	"BARS": {
+		"scope": "python,jupyter",
+		"prefix": ":bar",
+		"body": [
+			"x=np.arange(0, len(?)) # ? - list with labels",
+			"?.bar(x, ?, label=?, color='xkcd:indigo')",
+			"?.set_xticks(x)",
+			"?.set_xticklabels(?)"
+		],
+		"description": "Bar charts (2)"
+	},
+	"SIMP": {
+		"scope": "python,jupyter",
+		"prefix": ":simp",
+		"body": [
+			"import numpy as np",
+			"import pandas as pd",
+			"import matplotlib.pyplot as plt",
+			"import warnings",
+			"warnings.filterwarnings('ignore')",
+			"import seaborn as sns",
+			"import sqlite3",
+			"import mysql.connector as cnt",
+			"import plotly.express as px"
+		],
+		"description": "Simple imports"
+	},
+}
