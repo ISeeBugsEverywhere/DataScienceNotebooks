@@ -1,0 +1,360 @@
+{
+	// Place your global snippets here. Each snippet is defined under a snippet name and has a scope, prefix, body and 
+	// description. Add comma separated ids of the languages where the snippet is applicable in the scope field. If scope 
+	// is left empty or omitted, the snippet gets applied to all languages. The prefix is what is 
+	// used to trigger the snippet and the body will be expanded and inserted. Possible variables are: 
+	// $1, $2 for tab stops, $0 for the final cursor position, and ${1:label}, ${2:another} for placeholders. 
+	// Placeholders with the same ids are connected.
+	// Example:
+	// "Print to console": {
+	// 	"scope": "javascript,typescript",
+	// 	"prefix": "log",
+	// 	"body": [
+	// 		"console.log('$1');",
+	// 		"$2"
+	// 	],
+	// 	"description": "Log output to console"
+	// }
+	"Fig": {
+		"scope": "python,jupyter",
+		"body": [
+			"fig, axis = plt.subplots(figsize=(fwidth,fheight))",
+			"#plotting code:",
+			"",
+			"",
+			"axis.set_xlabel('X ašis', fontsize=fontsize)",
+			"axis.set_ylabel('Y ašis', fontsize=fontsize)",
+			"axis.set_title('Pavadinimas', fontsize=titlesize)",
+			"axis.tick_params(axis='x', labelsize=labelsize)",
+			"axis.tick_params(axis='y', labelsize=labelsize)",
+			"#axis.legend(loc='best')",
+			"#axis.ticklabel_format(style='plain')",
+			"fig.tight_layout()",
+			"plt.show()"
+		],
+		"description": "Inserts an axis",
+		"prefix": ":fig"
+	},
+	"SFig": {
+		"scope": "python,jupyter",
+		"body": [
+			"fig, axis = plt.subplots(figsize=(8,4.5))",
+			"#plotting code:",
+			"",
+			"",
+			"#axis.legend(loc='best')",
+			"#axis.ticklabel_format(style='plain')",
+			"fig.tight_layout()",
+			"plt.show()"
+		],
+		"description": "Inserts an axis",
+		"prefix": ":sfig"
+	},
+	"SciencePlots": {
+		"scope": "python,jupyter",
+		"body": [
+			"plt.style.use(style='default')",
+			"import scienceplots #then 'science', 'ieee' ...",
+			"plt.style.use(style='science')"
+		],
+		"description": "Sets science style",
+		"prefix": ":science"
+	},
+	"ThemedPlots": {
+		"scope": "python,jupyter",
+		"body": [
+			"plt.style.use(style='default')",
+			"#print(plt.style.available)",
+			"#bmh, classic, default, fivethirtyeight, ggplot ...",
+			"plt.style.use(style='default')"
+		],
+		"description": "Sets theme for all plots",
+		"prefix": ":theme"
+	},
+	"FigH2": {
+		"scope": "python,jupyter",
+		"body": [
+			"fig, (ax1, ax2) = plt.subplots(1,2, figsize=(fwidth*2,fheight), gridspec_kw={'width_ratios':[1,1]})",
+			"#ax1:",
+			"#plotting code:",
+			"",
+			"",
+			"ax1.set_xlabel('X ašis', fontsize=fontsize)",
+			"ax1.set_ylabel('Y ašis', fontsize=fontsize)",
+			"ax1.set_title('Pavadinimas', fontsize=titlesize)",
+			"ax1.tick_params(axis='x', labelsize=labelsize)",
+			"ax1.tick_params(axis='y', labelsize=labelsize)",
+			"#ax1.legend(loc=1)",
+			"#ax2:",
+			"#plotting code:",
+			"",
+			"",
+			"ax2.set_xlabel('X ašis', fontsize=fontsize)",
+			"ax2.set_ylabel('Y ašis', fontsize=fontsize)",
+			"ax2.set_title('Pavadinimas', fontsize=titlesize)",
+			"ax2.tick_params(axis='x', labelsize=labelsize)",
+			"ax2.tick_params(axis='y', labelsize=labelsize)",
+			"#ax2.legend(loc=1)",
+			"fig.tight_layout()",
+			"plt.show()"
+		],
+		"description": "Inserts two axes",
+		"prefix": ":figh2"
+	},
+	"SFigH2": {
+		"scope": "python,jupyter",
+		"body": [
+			"fig, (ax1, ax2) = plt.subplots(1,2, figsize=(16,9), gridspec_kw={'width_ratios':[1,1]})",
+			"#ax1:",
+			"#plotting code:",
+			"",
+			"",
+			"#ax1.legend(loc=1)",
+			"#ax2:",
+			"#plotting code:",
+			"",
+			"",
+			"#ax2.legend(loc='best')",
+			"fig.tight_layout()",
+			"plt.show()"
+		],
+		"description": "Inserts two axes",
+		"prefix": ":sfigh2"
+	},
+	"FigH4": {
+		"scope": "python,jupyter",
+		"body": [
+			"fig, ((ax1, ax2),(ax3, ax4)) = plt.subplots(2,2, figsize=(fwidth*2,fheight*2), gridspec_kw={'width_ratios':[1,1], 'height_ratios':[1,1]})",
+			"#ax1:",
+			"#plotting code:",
+			"",
+			"",
+			"ax1.set_xlabel('X ašis', fontsize=fontsize)",
+			"ax1.set_ylabel('Y ašis', fontsize=fontsize)",
+			"ax1.set_title('Pavadinimas', fontsize=titlesize)",
+			"ax1.tick_params(axis='x', labelsize=labelsize)",
+			"ax1.tick_params(axis='y', labelsize=labelsize)",
+			"#ax1.legend(loc=1)",
+			"#ax2:",
+			"#plotting code:",
+			"",
+			"",
+			"ax2.set_xlabel('X ašis', fontsize=fontsize)",
+			"ax2.set_ylabel('Y ašis', fontsize=fontsize)",
+			"ax2.set_title('Pavadinimas', fontsize=titlesize)",
+			"ax2.tick_params(axis='x', labelsize=labelsize)",
+			"ax2.tick_params(axis='y', labelsize=labelsize)",
+			"#ax2.legend(loc=1)",
+			"#ax3:",
+			"#plotting code:",
+			"",
+			"",
+			"ax3.set_xlabel('X ašis', fontsize=fontsize)",
+			"ax3.set_ylabel('Y ašis', fontsize=fontsize)",
+			"ax3.set_title('Pavadinimas', fontsize=titlesize)",
+			"ax3.tick_params(axis='x', labelsize=labelsize)",
+			"ax3.tick_params(axis='y', labelsize=labelsize)",
+			"#ax3.legend(loc=1)",
+			"#ax4:",
+			"#plotting code:",
+			"",
+			"",
+			"ax4.set_xlabel('X ašis', fontsize=fontsize)",
+			"ax4.set_ylabel('Y ašis', fontsize=fontsize)",
+			"ax4.set_title('Pavadinimas', fontsize=titlesize)",
+			"ax4.tick_params(axis='x', labelsize=labelsize)",
+			"ax4.tick_params(axis='y', labelsize=labelsize)",
+			"#ax4.legend(loc=1)",
+			"fig.tight_layout()",
+			"plt.show()"
+		],
+		"description": "Inserts four axes",
+		"prefix": ":fig4h"
+	},
+	"SFigH4": {
+		"scope": "python,jupyter",
+		"body": [
+			"fig, ((ax1, ax2),(ax3, ax4)) = plt.subplots(2,2, figsize=(8*2,4.5*2), gridspec_kw={'width_ratios':[1,1], 'height_ratios':[1,1]})",
+			"#ax1:",
+			"#plotting code:",
+			"",
+			"",
+			"#ax1.legend(loc='best')",
+			"#ax2:",
+			"#plotting code:",
+			"",
+			"",
+			"#ax2.legend(loc='best')",
+			"#ax3:",
+			"#plotting code:",
+			"",
+			"",
+			"#ax3.legend(loc='best')",
+			"#ax4:",
+			"#plotting code:",
+			"",
+			"",
+			"#ax4.legend(loc='best')",
+			"fig.tight_layout()",
+			"plt.show()"
+		],
+		"description": "Inserts four axes",
+		"prefix": ":sfig4h"
+	},
+	"Imports": {
+		"scope": "python,jupyter",
+		"body": [
+			"#standartiniai moduliai",
+			"import numpy as np",
+			"import numpy.polynomial.polynomial as poly",
+			"import pandas as pd",
+			"import matplotlib.pyplot as plt",
+			"import matplotlib as mpl",
+			"from datetime import datetime",
+			"from dateutil import parser",
+			"import mysql.connector as cnt",
+			"#import panel as pn",
+			"#pn.extension()",
+			"import seaborn as sns",
+			"import os, sys",
+			"print(os.getcwd())",
+			"fontsize=16 #for all entries",
+			"titlesize=24",
+			"labelsize=16",
+			"fwidth=6",
+			"fheight=4"
+		],
+		"description": "Inserts all the imports",
+		"prefix": ":imp"
+	},
+	"PolyFit": {
+		"scope": "python,jupyter",
+		"body": [
+			"coefs = np.polyfit(x=?, y=?, deg=?) #!coefs are in decreasing(C,B,A if y=Ax+Bx+Cx) order!",
+			"nfit = poly.Polynomial(coef=coefs[::-1]) #!polynomial takes in increasing order (A,B,C)",
+			"# y = nfit(x)",
+			"nfit"
+		],
+		"description": "Inserts numpy polyfit example",
+		"prefix": ":polyfit"
+	},
+	"Heatmap": {
+		"scope": "python,jupyter",
+		"body": [
+			"sns.heatmap(data=?,annot=True, annot_kws={'fontsize':fontsize})",
+			"#ax.collections[0].colorbar.ax.tick_params(labelsize=fontsize) #uncomment to change colorbar labelsize"
+		],
+		"description": "Inserts seaborn heatmap  example",
+		"prefix": ":heat"
+	},
+	"CNT": {
+		"scope": "python,jupyter",
+		"body": [
+			"#prisijungimas prie mySQL, ir kursoriaus sukūrimas",
+			"DB = cnt.connect(",
+			"\thost = '?',",
+			"\tuser='?',",
+			"\tpassword='?',",
+			"\tport=3306,",
+			"\tdatabase='?'",
+			"\t)",
+			"C=DB.cursor()"
+		],
+		"description": "Inserts connect body and cursor object",
+		"prefix": ":cnt"
+	},
+	"Fetch SQL": {
+		"scope": "python,jupyter",
+		"body": [
+			"#sql užklausos vykdymas per mysql/mariadb kursorių",
+			"sql=\"\"\"paste SQL command here!\"\"\"",
+			"C.execute(sql)",
+			"ans = C.fetchall()",
+			"? = list(map(list, zip(*ans)))",
+			"#? = np.transpose(ans)"
+		],
+		"description": "Fetch whole answer from SQL",
+		"prefix": ":sql"
+	},
+	"FN List": {
+		"scope": "python,jupyter",
+		"body": [
+			"#funkcija, apdorojanti sql atsakymą ir grąžinanti vertes kaip stulpelių sąrašą",
+			"def getLists(ats):",
+			"\tl = len(ats[0])",
+			"\tlsts = [[] for i in range(l)]",
+			"\tfor e in ats:",
+			"\t\tfor i in range(l):",
+			"\t\t\tlsts[i].append(e[i])",
+			"\tfor i in range(l):",
+			"\t\tlsts[i] = np.asarray(lsts[i])",
+			"\tif len(lsts) == 1:",
+			"\t\treturn lsts[0]",
+			"\treturn lsts"
+		],
+		"description": "Function returns a list of numpy arrays from an SQL answer",
+		"prefix": ":fn"
+	},
+	"pandas SQL": {
+		"scope": "python,jupyter",
+		"body": [
+			"#sql užklausa per pandas sql_query",
+			"sql=\"\"\"put sql command here\"\"\"",
+			"df = pd.read_sql_query(sql, con=DB)"
+		],
+		"description": "Fetch whole answer from SQL",
+		"prefix": ":pdslq"
+	},
+	"MATRC": {
+		"scope": "python,jupyter",
+		"body": [
+			"mpl.rc('axes.formatter', useoffset=False)",
+			"#mpl.use(backend='QtAgg')"
+		],
+		"description": "rc params",
+		"prefix": ":mrc"
+	},
+	"DOCX START":{
+		"scope": "python,jupyter",
+		"body": [
+			"from docx import Document",
+			"from docx.shared import Inches, Mm",
+			"document = Document()",
+			"sections = document.sections",
+			"section = sections[0]",
+			"section.page_height = Mm(297)",
+			"section.page_width = Mm(210)",
+			"section.left_margin = Mm(20)",
+			"section.right_margin = Mm(20)",
+			"section.top_margin = Mm(20)",
+			"section.bottom_margin = Mm(20)",
+			"document.add_heading('Document Title',0)",
+			"width = 1.25 #Inches",
+			"fig_cnt = 0"
+
+		],
+		"description": "docxstart",
+		"prefix": ":docxstart"
+	},
+	"DOCX PARAGRAPH": {
+		"scope": "python,jupyter",
+		"body": [
+			"p = document.add_paragraph('A plain paragraph having some ')",
+			"#p.add_run('tekstas')"
+		],
+		"description": "docxparagraph",
+		"prefix": ":docxpar"
+	},
+	"DOCX PICTURE": {
+		"scope": "python,jupyter",
+		"body": [
+			"figure_name='Fig{}.png'.format(fig_cnt)",
+			"fig.savefig(figure_name, format='png')",
+			"document.add_picture(figure_name, width=Inches(width))",
+			"fig_cnt = fig_cnt + 1",
+			"#document.save('Untitled.docx')"
+		],
+		"description": "docx picture",
+		"prefix": ":docxpic"
+	}
+}
