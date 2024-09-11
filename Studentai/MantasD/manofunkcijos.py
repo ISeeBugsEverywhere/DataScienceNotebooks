@@ -103,5 +103,55 @@ def col(fname, sep=';') -> None:
         pavadinimai.append(a+" priskirtas stulpeliui "+b)
     return pavadinimai
 
+def pop1(sar1,sar1labels,sar2,sar2labels,indeksas = 0,title1 = '',title2 = ''):    
+    
+    import matplotlib.pyplot as plt
+    from matplotlib.patches import ConnectionPatch
+    import numpy as np
 
+    # make figure and assign axis objects
+    fig = plt.figure(figsize=(9, 5.0625))
+    ax1 = fig.add_subplot(121)
+    ax2 = fig.add_subplot(122)
+    fig.subplots_adjust(wspace=0)
+    # large pie chart parameters
+    ratios = sar1
+    labels = sar1labels
+    angle = -180 * ratios[indeksas]
+    ax1.pie(ratios, autopct='%1.1f%%', startangle=angle,
+            labels=labels)
+    # small pie chart parameters
+    ratios = sar2
+    labels = sar2labels
+    width = .2
+    ax2.pie(ratios, autopct='%1.1f%%', startangle=angle,
+            labels=labels, radius=0.5, textprops={'size': 'smaller'})
+    
+    ax1.set_title(title1)
+    ax2.set_title(title2)
+
+    # use ConnectionPatch to draw lines between the two plots
+    # get the wedge data
+    theta1, theta2 = ax1.patches[indeksas].theta1, ax1.patches[indeksas].theta2
+    center, r = ax1.patches[indeksas].center, ax1.patches[indeksas].r
+
+    # draw top connecting line
+    x = r * np.cos(np.pi / 180 * theta2) + center[0]
+    y = np.sin(np.pi / 180 * theta2) + center[1]
+    con = ConnectionPatch(xyA=(- width / 2, .5), xyB=(x, y),
+                        coordsA="data", coordsB="data", axesA=ax2, axesB=ax1)
+    con.set_color([0, 0, 0])
+    con.set_linewidth(2)
+    ax2.add_artist(con)
+
+    # draw bottom connecting line
+    x = r * np.cos(np.pi / 180 * theta1) + center[0]
+    y = np.sin(np.pi / 180 * theta1) + center[1]
+    con = ConnectionPatch(xyA=(- width / 2, -.5), xyB=(x, y), coordsA="data",
+                        coordsB="data", axesA=ax2, axesB=ax1)
+    con.set_color([0, 0, 0])
+    ax2.add_artist(con)
+    con.set_linewidth(2)
+
+    return plt.show()
     
