@@ -1,4 +1,8 @@
 import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import mysql.connector as cnt
+from matplotlib.patches import ConnectionPatch
 
 
 
@@ -106,3 +110,49 @@ class SolarAnalyzer():
     
     def get_FF(self):
         return (self.get_pce() / (self.get_jsc() * self.get_Uoc())) *100
+    
+
+
+def PieOfPie(pie1, pie1_labels, pie2, pie2_labels):
+    name_pie1 = input('tite1?')
+    name_pie2 = input('tite2?')
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(9, 5))
+
+    angle = -180 * pie1[0]
+    width = 0.2
+    explode = [0.1 , 0, 0, 0 ,0]
+
+    ax1.pie(pie1, labels=pie1_labels, autopct='%.2f%%', startangle=angle,
+            explode=explode)
+
+
+    ax2.pie(pie2, labels=pie2_labels, autopct='%.2f%%', startangle=angle,
+            radius=0.5, textprops={'size':'smaller'})
+
+    ax1.set_title(name_pie1)
+    ax2.set_title(name_pie2)
+
+    # use ConnectionPatch to draw lines between the two plots
+    # get the wedge data
+    theta1, theta2 = ax1.patches[0].theta1, ax1.patches[0].theta2
+    center, r  = ax1.patches[0].center, ax1.patches[0].r
+
+    # draw top connecting line
+    x = r * np.cos(np.pi / 180 * theta2) + center[0]
+    y = np.sin(np.pi / 180 * theta2) + center[1]
+    con = ConnectionPatch(xyA=(- width / 2, 0.5), xyB=(x, y),
+                          coordsA="data", coordsB="data", axesA=ax2, axesB=ax1)
+    con.set_color([0, 0, 0])
+    con.set_linewidth(2)
+    ax2.add_artist(con)
+
+    # draw bottom connecting line
+    x = r * np.cos(np.pi / 180 * theta1) + center[0]
+    y = np.sin(np.pi /180 * theta1) + center[1]
+    con = ConnectionPatch(xyA=(- width / 2, -0.5), xyB=(x, y), coordsA="data",
+                          coordsB="data", axesA=ax2, axesB=ax1)
+    con.set_color([0, 0, 0])
+    con.set_linewidth(2)
+    ax2.add_artist(con)
+
+    plt.show
