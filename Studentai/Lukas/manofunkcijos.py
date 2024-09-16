@@ -278,8 +278,8 @@ def BarOfPie(pie1, pie1_labels, bar2, bar2_labels, indeksas, title1, title2):
 
 
 def BarOfPie2(pie1, pie1_labels, bar2, bar2_labels, indeksas, title1, title2):
-    ''' kai pie2 pateikiame kaip sarasa sarasu,
-    o su indeksu parenkame kuria pie1 grupe parodyti pie2 grafike'''
+    ''' kai bar2 pateikiame kaip sarasa sarasu,
+    o su indeksu parenkame kuria bar2 grupe parodyti bar2 grafike'''
 
     bar2_ratio = []
     for i in bar2[indeksas]:
@@ -319,27 +319,27 @@ def BarOfPie2(pie1, pie1_labels, bar2, bar2_labels, indeksas, title1, title2):
     ax2.axis('off')
     ax2.set_xlim(- 2.5 * width, 2.5 * width)
 
-    # # use ConnectionPatch to draw lines between the two plots
-    # theta1, theta2 = wedges[0].theta1, wedges[0].theta2
-    # center, r = wedges[0].center, wedges[0].r
-    # bar_height = sum(bar2_ratio)
+    # use ConnectionPatch to draw lines between the two plots
+    theta1, theta2 = wedges[indeksas].theta1, wedges[indeksas].theta2
+    center, r = wedges[indeksas].center, wedges[indeksas].r
+    bar_height = sum(bar2_ratio)
 
-    # # draw top connecting line
-    # x = r * np.cos(np.pi / 180 * theta2) + center[0]
-    # y = r * np.sin(np.pi / 180 * theta2) + center[1]
-    # con = ConnectionPatch(xyA=(-width / 2, bar_height), coordsA=ax2.transData,
-    #                     xyB=(x, y), coordsB=ax1.transData)
-    # con.set_color([0, 0, 0])
-    # con.set_linewidth(4)
-    # ax2.add_artist(con)
+    # draw top connecting line
+    x = r * np.cos(np.pi / 180 * theta2) + center[0]
+    y = r * np.sin(np.pi / 180 * theta2) + center[1]
+    con = ConnectionPatch(xyA=(-width / 2, bar_height), coordsA=ax2.transData,
+                        xyB=(x, y), coordsB=ax1.transData)
+    con.set_color([0, 0, 0])
+    con.set_linewidth(4)
+    ax2.add_artist(con)
 
-    # # draw bottom connecting line
-    # x = r * np.cos(np.pi / 180 * theta1) + center[0]
-    # y = r * np.sin(np.pi / 180 * theta1) + center[1]
-    # con = ConnectionPatch(xyA=(-width / 2, 0), coordsA=ax2.transData,
-    #                     xyB=(x, y), coordsB=ax1.transData)
-    # con.set_color([0, 0, 0])
-    # ax2.add_artist(con)
-    # con.set_linewidth(4)
+    # draw bottom connecting line
+    x = r * np.cos(np.pi / 180 * theta1) + center[0]
+    y = r * np.sin(np.pi / 180 * theta1) + center[1]
+    con = ConnectionPatch(xyA=(-width / 2, 0), coordsA=ax2.transData,
+                        xyB=(x, y), coordsB=ax1.transData)
+    con.set_color([0, 0, 0])
+    ax2.add_artist(con)
+    con.set_linewidth(4)
 
     plt.show()
