@@ -103,7 +103,7 @@ def col(fname, sep=';') -> None:
         pavadinimai.append(a+" priskirtas stulpeliui "+b)
     return pavadinimai
 
-def pop1(sar1,sar1labels,sar2,sar2labels,indeksas = 0,title1 = '',title2 = ''):    
+def pop(sar1,sar1labels,sar2,sar2labels,indeksas = 0,title1 = '',title2 = ''):    
     
     import matplotlib.pyplot as plt
     from matplotlib.patches import ConnectionPatch
@@ -117,9 +117,18 @@ def pop1(sar1,sar1labels,sar2,sar2labels,indeksas = 0,title1 = '',title2 = ''):
     # large pie chart parameters
     ratios = sar1
     labels = sar1labels
+    labels_for_ex = list(set(labels))
+    explode = []
+    ex = 0
+    for e in labels_for_ex:
+        if ex == indeksas:
+            explode.append(0.1)
+        else:
+            explode.append(0)
+        ex += 1 
     angle = -180 * ratios[indeksas]
     ax1.pie(ratios, autopct='%1.1f%%', startangle=angle,
-            labels=labels)
+            labels=labels, explode=explode)
     # small pie chart parameters
     ratios = sar2
     labels = sar2labels
@@ -155,3 +164,74 @@ def pop1(sar1,sar1labels,sar2,sar2labels,indeksas = 0,title1 = '',title2 = ''):
 
     return plt.show()
     
+def bop(sar1,sar1labels,sar2,sar2labels,indeksas = 0,title1 = '',title2 = ''):
+    import matplotlib.pyplot as plt
+    import numpy as np
+
+    from matplotlib.patches import ConnectionPatch
+
+    # make figure and assign axis objects
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(9, 5))
+    fig.subplots_adjust(wspace=0)
+
+    # pie chart parameters
+    overall_ratios = sar1
+    labels = sar1labels
+    labels_for_ex = list(set(labels))
+    explode =[]
+    ex = 0
+    for e in labels_for_ex:
+        if ex == indeksas:
+            explode.append(0.1)
+        else:
+            explode.append(0)
+        ex += 1 
+    # rotate so that first wedge is split by the x-axis
+    angle = -180 * overall_ratios[indeksas]
+    wedges, *_ = ax1.pie(overall_ratios, autopct='%1.1f%%', startangle=angle,
+                        labels=labels, explode=explode)
+
+    ax1.set_title(title1)
+    
+    # bar chart parameters
+    age_ratios = sar2
+    age_labels = sar2labels
+    bottom = 1
+    width = .2
+
+    # Adding from the top matches the legend.
+    for j, (height, label) in enumerate(reversed([*zip(age_ratios, age_labels)])):
+        bottom -= height
+        bc = ax2.bar(0, height, width, bottom=bottom, color='C0', label=label,
+                    alpha=0.1 + 0.25 * j)
+        ax2.bar_label(bc, labels=[f"{height:.0%}"], label_type='center')
+
+    ax2.set_title(title2)
+    ax2.legend()
+    ax2.axis('off')
+    ax2.set_xlim(- 2.5 * width, 2.5 * width)
+
+    # use ConnectionPatch to draw lines between the two plots
+    theta1, theta2 = wedges[indeksas].theta1, wedges[indeksas].theta2
+    center, r = wedges[indeksas].center, wedges[indeksas].r
+    bar_height = sum(age_ratios)
+
+    # draw top connecting line
+    x = r * np.cos(np.pi / 180 * theta2) + center[0]
+    y = r * np.sin(np.pi / 180 * theta2) + center[1]
+    con = ConnectionPatch(xyA=(-width / 2, bar_height), coordsA=ax2.transData,
+                        xyB=(x, y), coordsB=ax1.transData)
+    con.set_color([0, 0, 0])
+    con.set_linewidth(4)
+    ax2.add_artist(con)
+
+    # draw bottom connecting line
+    x = r * np.cos(np.pi / 180 * theta1) + center[0]
+    y = r * np.sin(np.pi / 180 * theta1) + center[1]
+    con = ConnectionPatch(xyA=(-width / 2, 0), coordsA=ax2.transData,
+                        xyB=(x, y), coordsB=ax1.transData)
+    con.set_color([0, 0, 0])
+    ax2.add_artist(con)
+    con.set_linewidth(4)
+
+    plt.show()
