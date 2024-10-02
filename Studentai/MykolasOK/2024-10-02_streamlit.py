@@ -75,7 +75,7 @@ if f is not None:
     fig.update_layout(mapbox_style='open-street-map')
     fig.update_layout(width=800, height=600)
     st.plotly_chart(fig)
-
+# Žr. https://stackoverflow.com/questions/64527823/plotly-express-plot-scatter-mapbox-with-feature-colors-from-dataframe-column-p
 
 st.header('Ketvirtoji tema - N.D. užduotis') 
 
