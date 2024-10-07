@@ -48,5 +48,4 @@ def getinfo(fname, sep = ';'):
         print(t)
 getinfo(fname=fname)
 
-
             
