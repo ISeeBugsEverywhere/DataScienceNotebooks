@@ -48,6 +48,4 @@ def getinfo(fname, sep = ';'):
         print(t)
 getinfo(fname=fname)
 
-stulp1 = input('Nurodykite pirmą stulpelį grafiko braižymui')
-stulp2 = input('Nurodykite antrą stulpelį grafiko braižymui')
             
