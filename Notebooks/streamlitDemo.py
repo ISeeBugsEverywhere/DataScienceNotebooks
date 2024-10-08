@@ -5,7 +5,7 @@ import plotly.express as px
 import mysql.connector as cnt
 import matplotlib.pyplot as plt
 #streamlit page config:
-st.set_page_config(page_icon=':bar_chart', page_title='DEMO STREAMLIT MAP', layout='centered')
+st.set_page_config(page_icon=':bar_chart', page_title='DEMO STREAMLIT MAP', layout='wide')
 from LKS94WGS84 import grid2geo
 df = None # df 
 
