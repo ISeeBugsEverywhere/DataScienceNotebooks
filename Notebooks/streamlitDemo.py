@@ -1,11 +1,11 @@
 import streamlit as st
 import pandas as pd
-import numpy as np
+# import numpy as np
 import plotly.express as px
-import mysql.connector as cnt
-import matplotlib.pyplot as plt
+# import mysql.connector as cnt
+# import matplotlib.pyplot as plt
 #streamlit page config:
-st.set_page_config(page_icon=':bar_chart', page_title='DEMO STREAMLIT MAP', layout='centered')
+st.set_page_config(page_icon=':bar_chart', page_title='DEMO STREAMLIT MAP', layout='wide')
 from LKS94WGS84 import grid2geo
 df = None # df 
 
@@ -33,7 +33,7 @@ if df is not None:
     
 left, right = st.columns(2)
 if df is not None:
-    dfg = df[df['zemesnis_ivykio_tipas'].str.contains('Gaisras', na=False)]
+    dfg = df[~df['zemesnis_ivykio_tipas'].str.contains('Gaisras 0', na=False)]
     fig = px.scatter_mapbox(data_frame=dfg, lon='LONG', lat='LAT', zoom=6)
     fig.update_layout(mapbox_style='open-street-map')
     fig.update_layout(title='Gaisrų žemėlapis')
