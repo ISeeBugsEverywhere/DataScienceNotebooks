@@ -235,3 +235,62 @@ def bop(sar1,sar1labels,sar2,sar2labels,indeksas = 0,title1 = '',title2 = ''):
     con.set_linewidth(4)
 
     plt.show()
+    
+    
+def check_if_value_exists_or_max(db_path, table_name, column_name, value=None):
+    import sqlite3
+    # Prisijungimas prie SQLite duomenų bazės
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+
+    if value is None:
+        # Jei value yra None, gauti maksimalią reikšmę kaip float
+        sql = f"SELECT MAX(CAST(\"{column_name}\" AS REAL)) FROM {table_name}"
+        cursor.execute(sql)
+        result = cursor.fetchone()
+        conn.close()
+        return result[0]  # Grąžinti maksimalią reikšmę (float)
+    else:
+        # Jei value nurodyta, patikrinti, ar yra įrašas su šia reikšme
+        sql = f"SELECT 1 FROM {table_name} WHERE \"{column_name}\" = ? LIMIT 1"
+        cursor.execute(sql, (value,))
+        result = cursor.fetchone()
+        conn.close()
+        return result is not None  # Grąžinti True jei yra įrašas, False jei ne
+        
+        
+def insert_into_db(data, db_path, table_name):
+    import sqlite3
+    try:
+        # Prisijungimas prie SQLite duomenų bazės
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
+
+        # Funkcija, kuri patikrina, ar lentelėje jau yra stulpelis, jei ne, prideda jį
+        def add_column_if_not_exists(column_name):
+            cursor.execute(f"PRAGMA table_info({table_name})")
+            columns = [info[1] for info in cursor.fetchall()]
+            
+            if column_name not in columns:
+                cursor.execute(f"ALTER TABLE {table_name} ADD COLUMN \"{column_name}\" TEXT")
+
+        # Sukurti lentelę, jei ji dar nesukurta
+        cursor.execute(f"CREATE TABLE IF NOT EXISTS {table_name} (id INTEGER PRIMARY KEY AUTOINCREMENT)")
+
+        # Patikrinti kiekvieną žodyno raktą (stulpelį), ar jis egzistuoja lentelėje, ir jei ne - pridėti
+        for key in data.keys():
+            add_column_if_not_exists(key)
+
+        # Paruošti SQL užklausą dinamiškai
+        columns = ', '.join(f'"{key}"' for key in data.keys())
+        placeholders = ', '.join('?' for _ in data)
+        sql = f"INSERT INTO {table_name} ({columns}) VALUES ({placeholders})"
+
+        # Įrašyti duomenis
+        cursor.execute(sql, tuple(data.values()))
+
+        # Išsaugoti pakeitimus ir uždaryti ryšį
+        conn.commit()
+        return conn.close()
+    except:
+        return conn.close()
