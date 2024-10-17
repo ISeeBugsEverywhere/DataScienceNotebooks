@@ -16,17 +16,21 @@ from selenium.webdriver.chrome.options import Options
 from selenium import webdriver
 from bs4 import BeautifulSoup
 import time
+import random
 
 opcijos = Options()
 opcijos.add_argument('--incognito')
+opcijos.add_argument('--ignore-certificate-errors')
+opcijos.add_argument('--ignore-ssl-errors')
 driver = webdriver.Chrome(options=opcijos)
-url = 'https://autoplius.lt/skelbimai/naudoti-automobiliai?page_nr=1'
+# url = 'https://autoplius.lt/skelbimai/naudoti-automobiliai?page_nr=1'
+url = 'https://autoplius.lt/skelbimai/naudoti-automobiliai?make_id=108&page_nr=1'
 driver.get(url)
 time.sleep(5)
 
 page = 1
 # while page < 201:
-while page < 11:
+while page < 3:
     source = driver.page_source
 
     bs = BeautifulSoup(source, 'html.parser')
@@ -42,10 +46,11 @@ while page < 11:
     # print(auto_nuorodos)
     # print(len(auto_nuorodos))
 
-    kitas = bs.find('div', {'class':'page-navigation-container'}).find('a', {'class':'next'})
+    if bs.find('div', {'class':'page-navigation-container'}).find('a', {'class':'next'}):
+        kitas = bs.find('div', {'class':'page-navigation-container'}).find('a', {'class':'next'})
     # print(kitas['href'])
-    kitas_psl = kitas['href']
-    next_nuoroda = f'https://autoplius.lt{kitas_psl}'
+        kitas_psl = kitas['href']
+        next_nuoroda = f'https://autoplius.lt{kitas_psl}'
     # print(next_nuoroda)
 
 
@@ -96,7 +101,8 @@ while page < 11:
 
         url = nuoroda
         driver.get(url)
-        time.sleep(1)
+        a = random.randint(2, 11)
+        time.sleep(a)
         source = driver.page_source
         
         bs_auto = BeautifulSoup(source, 'html.parser')
@@ -142,7 +148,7 @@ while page < 11:
         data1 = []
         data1.append(data)
 
-        SDB = sqlite3.connect('Auto.db')  # jei neegzistuoja db , bus sukurta nauja db
+        SDB = sqlite3.connect('Auto_test.db')  # jei neegzistuoja db , bus sukurta nauja db
         Cs = SDB.cursor()
 
         #  if not exists - tikrina ar jau sukurta DB
