@@ -96,3 +96,18 @@ sns.barplot(data=df_tipas_gr, x='PavaruDeze', y='price', hue='KebuloTipas')
 
 
 st.pyplot(fig, use_container_width=True)
+
+st.header('Ar Tech. apžiūros turėjimas daro įtaka kainai? ')
+
+def TA(x):
+    if x != 'None':
+        return 'Galioja'
+    else:
+        return 'Negalioja'
+
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 6))
+df['TA'] = df['TechApžiuraIki'].apply(TA)
+
+df[(df['PavaruDeze'] != 'None')].groupby(['PavaruDeze','TA'])['price'].mean(numeric_only=True).unstack().plot(kind='bar' , legend=True, xlabel='Tech. apžiūra', ax=ax1)
+df.groupby('TA')['price'].count().plot(kind='bar' , ylabel='Kiekis', xlabel='Tech. apžiūra', ax=ax2)
+st.pyplot(fig)
