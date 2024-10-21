@@ -292,5 +292,77 @@ def insert_into_db(data, db_path, table_name):
         # Išsaugoti pakeitimus ir uždaryti ryšį
         conn.commit()
         return conn.close()
-    except:
+    except Exception as e:
+        print(e)
         return conn.close()
+ 
+    
+def update_row_in_db(db_path, table_name, data, condition_column, condition_value):
+    import sqlite3
+    """
+    Atnaujina konkrečią eilutę SQLite duomenų bazėje pagal nurodytą stulpelį ir jo reikšmę.
+    Jei stulpelio nėra, jis pridedamas, tada įrašoma reikšmė į nurodytą eilutę.
+
+    Args:
+        db_path (str): Kelias iki SQLite duomenų bazės failo.
+        table_name (str): Lentelės pavadinimas, kurioje bus atliekami pakeitimai.
+        data (dict): Žodynas, kurio key yra stulpelio pavadinimas, o value - reikšmė, kurią reikia įrašyti.
+        condition_column (str): Stulpelio pavadinimas, pagal kurį bus identifikuojama eilutė.
+        condition_value (str): Reikšmė, pagal kurią bus atrenkama eilutė.
+    """
+    # Prisijungiama prie DB
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+
+    try:
+        # Atnaujiname visus nurodytus stulpelius su atitinkamomis reikšmėmis
+        for column_name, value in data.items():
+            # Tikrinama, ar stulpelis jau egzistuoja
+            cursor.execute(f"PRAGMA table_info({table_name});")
+            columns = [col[1] for col in cursor.fetchall()]
+            
+            if column_name not in columns:
+                # Pridedamas naujas stulpelis, jei jo nėra
+                cursor.execute(f"ALTER TABLE {table_name} ADD COLUMN {column_name} TEXT;")
+                print(f"Pridėtas naujas stulpelis: {column_name}")
+            
+            # Atnaujina konkrečią eilutę pagal sąlygą (condition_column = condition_value)
+            cursor.execute(f"UPDATE {table_name} SET {column_name} = ? WHERE {condition_column} = ?;", (value, condition_value))
+            print(f"Atnaujinta eilutė, kur {condition_column} = '{condition_value}': nustatyta {column_name} = '{value}'")
+
+        # Išsaugoma ir uždaroma
+        conn.commit()
+
+    except sqlite3.Error as e:
+        print(f"Klaida vykdant SQL: {e}")
+        conn.rollback()
+    
+    finally:
+        conn.close()
+        
+def query_to_dataframe(db_path, query):
+    import sqlite3
+    import pandas as pd
+    """
+    Atlieka SQL užklausą SQLite duomenų bazėje ir grąžina rezultatus kaip pandas DataFrame.
+
+    Args:
+        db_path (str): Kelias iki SQLite duomenų bazės failo.
+        query (str): SQL užklausa, kurią reikia vykdyti.
+
+    Returns:
+        pandas.DataFrame: Užklausos rezultatai kaip DataFrame.
+    """
+    # Prisijungiama prie duomenų bazės
+    conn = sqlite3.connect(db_path)
+    
+    try:
+        # SQL užklausos vykdymas ir rezultatų konvertavimas į DataFrame
+        df = pd.read_sql_query(query, conn)
+        return df
+    except sqlite3.Error as e:
+        print(f"Klaida vykdant SQL: {e}")
+        return None
+    finally:
+        # Uždaryti ryšį su duomenų baze
+        conn.close()
