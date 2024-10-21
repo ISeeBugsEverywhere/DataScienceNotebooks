@@ -34,8 +34,22 @@ def kw(x):
             return None
     else:
         return None
+    
+def kw2(x):
+    if x != None:
+        if 'kW' in x:
+            return int(x.split('(')[1].replace('kW)',''))
+        else:
+            return None
+    else:
+        return None
 
 dft['Galingumas'] = dft['Variklis'].apply(kw)
+dft['Galingumas2'] = dft['Variklis'].apply(kw2)
+dft['Tik Miestas'] = dft['Miestas'].apply(lambda x: x.split(',')[0] if x!=None else None)
+dft['TA'] = dft['Tech. apžiūra iki'].apply(lambda x: int(x[:4]) if x != None else None)
+dft['Galioja_TA'] = dft['TA'].apply(lambda x: "Taip" if x>2024 else 'Ne')
+dft['TA_m'] = dft['TA'].apply(lambda x: str(int(x)) if x>2024 else 'Negalioja')
 
 st.title('Automobilių kainų analizė')
 
