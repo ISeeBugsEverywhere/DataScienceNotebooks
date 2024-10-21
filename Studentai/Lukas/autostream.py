@@ -12,7 +12,7 @@ st.set_page_config(page_icon=':bar_chart', page_title='DEMO STREAMLIT MAP', layo
 
 st.header('Kainos priklausomybė nuo ridos ')
 
-SDB = sqlite3.connect('Auto2.db')
+SDB = sqlite3.connect('Auto.db')
 Cs = SDB.cursor()
 
 sql="""select * from Autopliuslt;"""
@@ -111,3 +111,59 @@ df['TA'] = df['TechApžiuraIki'].apply(TA)
 df[(df['PavaruDeze'] != 'None')].groupby(['PavaruDeze','TA'])['price'].mean(numeric_only=True).unstack().plot(kind='bar' , legend=True, xlabel='Tech. apžiūra', ax=ax1)
 df.groupby('TA')['price'].count().plot(kind='bar' , ylabel='Kiekis', xlabel='Tech. apžiūra', ax=ax2)
 st.pyplot(fig)
+
+
+
+st.header('Importuoti automobiliai ')
+
+salys = df[df['PirmosiosRegistracijosSalis'] != 'None']['PirmosiosRegistracijosSalis'].value_counts()
+
+df_salys = df[(df['PirmosiosRegistracijosSalis'] != 'None')&(df['PavaruDeze'] !='None')][['PirmosiosRegistracijosSalis', 'PavaruDeze', 'price']]
+
+df_salys_gr = df_salys.groupby(['PirmosiosRegistracijosSalis', 'PavaruDeze']).mean(numeric_only=True)
+
+
+fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 10))
+
+B1 = ax1.bar(salys.index, salys.values)
+ax1.bar_label(B1)
+ax1.tick_params(axis='x', rotation=45)
+ax1.set_ylabel('Automobilių kiekis')
+ax1.set_title('Iš kur atvežti automobiliai')
+
+sns.barplot(data=df_salys_gr, x='PirmosiosRegistracijosSalis', y='price', hue='PavaruDeze', ax=ax2)
+ax2.tick_params(axis='x', rotation=45)
+ax2.set_title('Vidutinės kainos')
+
+fig.tight_layout()
+st.pyplot(fig, use_container_width=True)
+
+
+
+st.header('Top 10 gamintojų')
+# Kodėl gaunu blogai per streamlit?
+gamintojai = df['Marke'].value_counts()
+top10g = gamintojai.head(10).index.to_list()
+df_top = df[df['Marke'].isin(top10g)]
+top_gamintojai = df_top['Marke'].value_counts()
+
+fig, ax1 = plt.subplots(figsize=(8, 4.5))
+
+B1 = ax1.bar(top_gamintojai.index, top_gamintojai.values)
+ax1.bar_label(B1)
+ax1.tick_params(axis='x', rotation=45)
+plt.title('TOP 10 gamintojai')
+
+
+st.pyplot(fig)
+
+
+
+
+st.header('Top 10 gamintojų kainos priklausomybė nuo ridos')
+df_top_gamintojai = df[df['Marke'].isin(top10g)][['Marke', 'R5000', 'price']]
+
+df_top_gamintojai_gr = df_top_gamintojai.groupby(['Marke', 'R5000']).mean(numeric_only=True)
+
+sns.scatterplot(data=df_top_gamintojai_gr, x='R5000', y='price', hue='Marke')
+st.pyplot(use_container_width=True)
