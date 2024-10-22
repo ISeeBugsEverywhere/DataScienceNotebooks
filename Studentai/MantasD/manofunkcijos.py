@@ -235,3 +235,134 @@ def bop(sar1,sar1labels,sar2,sar2labels,indeksas = 0,title1 = '',title2 = ''):
     con.set_linewidth(4)
 
     plt.show()
+    
+    
+def check_if_value_exists_or_max(db_path, table_name, column_name, value=None):
+    import sqlite3
+    # Prisijungimas prie SQLite duomenų bazės
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+
+    if value is None:
+        # Jei value yra None, gauti maksimalią reikšmę kaip float
+        sql = f"SELECT MAX(CAST(\"{column_name}\" AS REAL)) FROM {table_name}"
+        cursor.execute(sql)
+        result = cursor.fetchone()
+        conn.close()
+        return result[0]  # Grąžinti maksimalią reikšmę (float)
+    else:
+        # Jei value nurodyta, patikrinti, ar yra įrašas su šia reikšme
+        sql = f"SELECT 1 FROM {table_name} WHERE \"{column_name}\" = ? LIMIT 1"
+        cursor.execute(sql, (value,))
+        result = cursor.fetchone()
+        conn.close()
+        return result is not None  # Grąžinti True jei yra įrašas, False jei ne
+        
+        
+def insert_into_db(data, db_path, table_name):
+    import sqlite3
+    try:
+        # Prisijungimas prie SQLite duomenų bazės
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
+
+        # Funkcija, kuri patikrina, ar lentelėje jau yra stulpelis, jei ne, prideda jį
+        def add_column_if_not_exists(column_name):
+            cursor.execute(f"PRAGMA table_info({table_name})")
+            columns = [info[1] for info in cursor.fetchall()]
+            
+            if column_name not in columns:
+                cursor.execute(f"ALTER TABLE {table_name} ADD COLUMN \"{column_name}\" TEXT")
+
+        # Sukurti lentelę, jei ji dar nesukurta
+        cursor.execute(f"CREATE TABLE IF NOT EXISTS {table_name} (id INTEGER PRIMARY KEY AUTOINCREMENT)")
+
+        # Patikrinti kiekvieną žodyno raktą (stulpelį), ar jis egzistuoja lentelėje, ir jei ne - pridėti
+        for key in data.keys():
+            add_column_if_not_exists(key)
+
+        # Paruošti SQL užklausą dinamiškai
+        columns = ', '.join(f'"{key}"' for key in data.keys())
+        placeholders = ', '.join('?' for _ in data)
+        sql = f"INSERT INTO {table_name} ({columns}) VALUES ({placeholders})"
+
+        # Įrašyti duomenis
+        cursor.execute(sql, tuple(data.values()))
+
+        # Išsaugoti pakeitimus ir uždaryti ryšį
+        conn.commit()
+        return conn.close()
+    except Exception as e:
+        print(e)
+        return conn.close()
+ 
+    
+def update_row_in_db(db_path, table_name, data, condition_column, condition_value):
+    import sqlite3
+    """
+    Atnaujina konkrečią eilutę SQLite duomenų bazėje pagal nurodytą stulpelį ir jo reikšmę.
+    Jei stulpelio nėra, jis pridedamas, tada įrašoma reikšmė į nurodytą eilutę.
+
+    Args:
+        db_path (str): Kelias iki SQLite duomenų bazės failo.
+        table_name (str): Lentelės pavadinimas, kurioje bus atliekami pakeitimai.
+        data (dict): Žodynas, kurio key yra stulpelio pavadinimas, o value - reikšmė, kurią reikia įrašyti.
+        condition_column (str): Stulpelio pavadinimas, pagal kurį bus identifikuojama eilutė.
+        condition_value (str): Reikšmė, pagal kurią bus atrenkama eilutė.
+    """
+    # Prisijungiama prie DB
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+
+    try:
+        # Atnaujiname visus nurodytus stulpelius su atitinkamomis reikšmėmis
+        for column_name, value in data.items():
+            # Tikrinama, ar stulpelis jau egzistuoja
+            cursor.execute(f"PRAGMA table_info({table_name});")
+            columns = [col[1] for col in cursor.fetchall()]
+            
+            if column_name not in columns:
+                # Pridedamas naujas stulpelis, jei jo nėra
+                cursor.execute(f"ALTER TABLE {table_name} ADD COLUMN {column_name} TEXT;")
+                print(f"Pridėtas naujas stulpelis: {column_name}")
+            
+            # Atnaujina konkrečią eilutę pagal sąlygą (condition_column = condition_value)
+            cursor.execute(f"UPDATE {table_name} SET {column_name} = ? WHERE {condition_column} = ?;", (value, condition_value))
+            print(f"Atnaujinta eilutė, kur {condition_column} = '{condition_value}': nustatyta {column_name} = '{value}'")
+
+        # Išsaugoma ir uždaroma
+        conn.commit()
+
+    except sqlite3.Error as e:
+        print(f"Klaida vykdant SQL: {e}")
+        conn.rollback()
+    
+    finally:
+        conn.close()
+        
+def query_to_dataframe(db_path, query):
+    import sqlite3
+    import pandas as pd
+    """
+    Atlieka SQL užklausą SQLite duomenų bazėje ir grąžina rezultatus kaip pandas DataFrame.
+
+    Args:
+        db_path (str): Kelias iki SQLite duomenų bazės failo.
+        query (str): SQL užklausa, kurią reikia vykdyti.
+
+    Returns:
+        pandas.DataFrame: Užklausos rezultatai kaip DataFrame.
+    """
+    # Prisijungiama prie duomenų bazės
+    conn = sqlite3.connect(db_path)
+    
+    try:
+        # SQL užklausos vykdymas ir rezultatų konvertavimas į DataFrame
+        df = pd.read_sql_query(query, conn)
+        return df
+    except sqlite3.Error as e:
+        print(f"Klaida vykdant SQL: {e}")
+        return None
+    finally:
+        # Uždaryti ryšį su duomenų baze
+        conn.close()
