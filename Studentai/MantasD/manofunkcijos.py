@@ -366,3 +366,79 @@ def query_to_dataframe(db_path, query):
     finally:
         # Uždaryti ryšį su duomenų baze
         conn.close()
+        
+
+def remove_duplicates(db_name, table_name, column_name):
+    import sqlite3
+
+    conn = sqlite3.connect(db_name)
+    cursor = conn.cursor()
+
+    # Sukuriame laikiną lentelę be dublikatų
+    cursor.execute(f'''
+        CREATE TEMPORARY TABLE {table_name}_temp AS
+        SELECT * FROM {table_name}
+        WHERE rowid IN (
+            SELECT MIN(rowid)
+            FROM {table_name}
+            GROUP BY {column_name}
+        );
+    ''')
+
+    # Išvalome pradinę lentelę
+    cursor.execute(f"DELETE FROM {table_name};")
+
+    # Grąžiname duomenis iš laikinos lentelės atgal į pradinę
+    cursor.execute(f'''
+        INSERT INTO {table_name}
+        SELECT * FROM {table_name}_temp;
+    ''')
+
+    # Pašaliname laikiną lentelę
+    cursor.execute(f"DROP TABLE {table_name}_temp;")
+
+    # Išsaugome pakeitimus ir uždarome ryšį
+    conn.commit()
+    conn.close()
+    
+def remove_table(db_name, table_name):
+    import sqlite3
+
+    conn = sqlite3.connect(db_name)
+    cursor = conn.cursor()
+
+    # Ištriname nurodytą lentelę
+    cursor.execute(f"DROP TABLE IF EXISTS {table_name};")
+
+    # Išsaugome pakeitimus ir uždarome ryšį
+    conn.commit()
+    conn.close()
+
+
+def get_coordinates(address):
+    import requests
+    url = "https://nominatim.openstreetmap.org/search"
+    params = {
+        "q": address,
+        "format": "json",
+        "addressdetails": 1,
+        "limit": 1
+    }
+    headers = {
+        "User-Agent": "MyGeolocationApp/1.0 (example@domain.com)"  
+    }
+    
+    response = requests.get(url, params=params, headers=headers)
+    a = address
+    if response.status_code == 200:
+        data = response.json()
+        if data:
+            latitude = data[0].get("lat")
+            longitude = data[0].get("lon")
+            return float(latitude), float(longitude)
+        else:
+            print(f"No coordinates found for this address {a}.")
+            return None
+    else:
+        print("Error:", response.status_code)
+        return None
