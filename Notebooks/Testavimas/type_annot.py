@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import doctest
 
 # from typing import * #negražu, bet susikeliame visus tipus
 #  visgi geriau
@@ -22,3 +23,19 @@ def so_text(text:str):
 def doGoodWork(df:pd.DataFrame) -> np.ndarray:
     r : np.ndarray = df.iloc[:,1].values
     return r
+
+def raiseErr(x:str) -> None:
+    '''
+    >>> raiseErr(2)
+    Traceback (most recent call last):
+    ValueError: The hell is that?
+    >>> raiseErr('2')
+    OK
+    '''
+    if isinstance(x, str):
+        print('OK')
+    else:
+        raise ValueError('The hell is that?')
+
+# raiseErr('2')
+# raiseErr(2)
