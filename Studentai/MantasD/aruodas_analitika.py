@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import plotly.express as px
 
-st.set_page_config(page_icon=':bar_chart', page_title='Aruodas_analitika', layout='wide')
+st.set_page_config(page_icon=':bar_chart', page_title='Aruodas_analitika', layout='centered')
 st.title('NT rinkos analizė')
 
 # Funkcija, kuri gauna duomenis iš SQLite duomenų bazės
@@ -89,7 +89,7 @@ selected_option = st.selectbox('Pasirinkite grafiką:', options)
 
 # Funkcija grafiko rodymui pagal pasirinkimą
 def show_chart(selected_option):
-    fig, axes = plt.subplots(2,1,figsize=(20, 30))
+    fig, axes = plt.subplots(1,2,figsize=(20, 15))
 
     if selected_option == 'Koks NT plotas yra dažniausiai pasitaikantis lyginamuose miestuose?':
         dfx = df_anal[df_anal['Tipas'] == 'Butai pardavimui'].groupby(['Plotas_group'])['Kaina'].count().reset_index().sort_values(by= 'Kaina', ascending=False)[:20]
