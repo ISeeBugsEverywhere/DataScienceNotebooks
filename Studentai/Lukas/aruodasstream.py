@@ -747,10 +747,12 @@ for i in rajonai:
 vilnius = df[df['miestas'] == 'Vilnius']
 
 def get_lat(x):
-    return float(rajonai_dict[x][0])
+    if x is not None:
+        return float(rajonai_dict[x][0])
 
 def get_lon(x):
-    return float(rajonai_dict[x][1])
+    if x is not None:
+        return float(rajonai_dict[x][1])
 
 vilnius['lat'] = vilnius['rajonas'].apply(get_lat)
 vilnius['lon'] = vilnius['rajonas'].apply(get_lon)
@@ -806,17 +808,19 @@ vilniusn['lon'] = vilniusn['rajonas'].apply(getn_lon)
 count_rajonain = dfn[dfn['miestas'] == 'Vilnius']['rajonas'].values.tolist()
 countsn = Counter(count_rajonain)
 
+def get_countn(x):
+    return countsn[x]
 
-vilniusn['count'] = vilniusn['rajonas'].apply(get_count)
+vilniusn['count'] = vilniusn['rajonas'].apply(get_countn)
 
-fig = px.scatter_mapbox(data_frame=vilniusn, lon='lon', lat='lat', zoom=5,
+fig1 = px.scatter_mapbox(data_frame=vilniusn, lon='lon', lat='lat', zoom=5,
                         size='count',  # Use 'count' to determine marker size
                         hover_name='count',  # Display count on hover
                         size_max=30, # Maximum size of markers 
                         title='Nuomuojami butai Vilniuje') 
-fig.update_layout(mapbox_style='open-street-map')
-fig.update_layout(width=800, height=600)
+fig1.update_layout(mapbox_style='open-street-map')
+fig1.update_layout(width=800, height=600)
 # fig.update_traces(cluster=dict(enabled=True))
-right.plotly_chart(fig)
+right.plotly_chart(fig1)
 
 ##################################################################################
