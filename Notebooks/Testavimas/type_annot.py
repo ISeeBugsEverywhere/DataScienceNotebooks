@@ -20,5 +20,5 @@ def so_text(text:str):
     pass
 
 def doGoodWork(df:pd.DataFrame) -> np.ndarray:
-    df.
-    pass
+    r : np.ndarray = df.iloc[:,1].values
+    return r
