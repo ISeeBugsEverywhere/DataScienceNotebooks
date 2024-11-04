@@ -1,5 +1,5 @@
 import unittest
-from funkcijos import *
+from scr.funkcijos import *
 
 
 class Test_funkcijos(unittest.TestCase):
@@ -14,6 +14,5 @@ class Test_funkcijos(unittest.TestCase):
         
     def test_divide(self):
         self.assertEqual(divide(5,5),1)
+        self.assertRaises(ZeroDivisionError, divide, 1, 0)
 
-if __name__ == '__main__':
-    unittest.main()
