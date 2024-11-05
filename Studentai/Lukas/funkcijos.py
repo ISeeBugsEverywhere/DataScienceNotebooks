@@ -110,7 +110,7 @@ def flatten_list(nested_list):
 #  SVARBU : duomenis turite šioms funkcijoms pateikti iš savo SQLite DB, pasinaudoti setUp metodu. SQLite DB turi pateikti raw duomenis (nerikiuoti, neapdoroti, negrupuoti papildomai).
 # pasinaudokite tearDown() metodu - uždarykite SQLite DB po testų.
 
-def get_markes():
+def get_markes_sql():
     SDB = sqlite3.connect('Auto.db')
     C = SDB.cursor()
     sql="""select Marke, count(*) as k from Autopliuslt
@@ -123,3 +123,48 @@ def get_markes():
     SDB.close()
     return markes
 
+
+def get_markes_df():
+    SDB = sqlite3.connect('Auto.db')
+    C = SDB.cursor()
+    sql="""select * from Autopliuslt;"""
+    df_with_dubs = pd.read_sql_query(sql, con=SDB)
+    df = df_with_dubs.drop_duplicates()
+    SDB.close()
+
+    markes = df['Marke'].value_counts().head(5).index.to_list()
+    return markes
+
+
+def get_vid_kaina_top5():
+    SDB = sqlite3.connect('Auto.db')
+    C = SDB.cursor()
+    sql="""select * from Autopliuslt;"""
+    df_with_dubs = pd.read_sql_query(sql, con=SDB)
+    df = df_with_dubs.drop_duplicates()
+    SDB.close()
+
+    def kaina(x):
+        if x != 'None':
+            return int(x.replace(' ', ''))
+        
+    df['price'] = df['Kaina'].apply(kaina)
+    markes = get_markes_df()
+
+    df_top = df[df['Marke'].isin(markes)][['Marke', 'price']]
+    df_top_gr = df_top.groupby('Marke').mean(numeric_only=True).round().reset_index()
+    top_auto = df_top_gr['Marke'].tolist()
+    top_kaina = df_top_gr['price'].tolist()
+
+    top_ak = {}
+    for a, k in zip(top_auto, top_kaina):
+        top_ak[a] = k
+
+    # return top_ak
+
+    kainos = []
+    for m in markes:
+        k = top_ak[m]
+        kainos.append(k)
+    
+    return kainos

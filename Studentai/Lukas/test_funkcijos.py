@@ -18,10 +18,23 @@ class Test_funkcijos(unittest.TestCase):
         self.C.execute(self.sql)
         self.ans = self.C.fetchall()
         self.markes, self.kiekiai = list(map(list, zip(*self.ans)))
+
+        self.sql2="""select * from Autopliuslt;"""
+        self.df_with_dubs = pd.read_sql_query(self.sql2, con=self.SDB)
+        self.df = self.df_with_dubs.drop_duplicates()
         
      
-    def test_get_markes(self):
-        self.assertEqual(get_markes(), self.markes)   
+    def test_get_markes_sql(self):
+        self.assertEqual(get_markes_sql(), self.markes)
+
+
+    def test_get_markes_df(self):
+        self.assertEqual(get_markes_df(), ['BMW', 'Volkswagen', 'Audi', 'Toyota', 'Mercedes-Benz'])
+
+
+    def test_get_vid_kaina_top5(self):
+        self.assertEqual(get_vid_kaina_top5(), [20971.0, 15244.0, 19219.0, 17269.0, 21967.0])
+
         
     def  test_add(self):
         self.assertEqual(add(self.A, self.B),9, msg='A nelygus B')
