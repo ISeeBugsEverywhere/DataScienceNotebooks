@@ -151,7 +151,7 @@ fig, ax1 = plt.subplots(figsize=(8, 4.5))
 
 B1 = ax1.bar(top_gamintojai.index, top_gamintojai.values)
 ax1.bar_label(B1)
-ax1.tick_params(axis='x', rotation=45)
+ax1.tick_params(axis='x', rotation=90)
 plt.title('TOP 10 gamintojai')
 
 
@@ -161,9 +161,164 @@ st.pyplot(fig)
 
 
 st.header('Top 10 gamintojų kainos priklausomybė nuo ridos')
+
+fig, axis = plt.subplots()
 df_top_gamintojai = df[df['Marke'].isin(top10g)][['Marke', 'R5000', 'price']]
 
 df_top_gamintojai_gr = df_top_gamintojai.groupby(['Marke', 'R5000']).mean(numeric_only=True)
 
-sns.scatterplot(data=df_top_gamintojai_gr, x='R5000', y='price', hue='Marke')
-st.pyplot(use_container_width=True)
+sns.scatterplot(data=df_top_gamintojai_gr, x='R5000', y='price', hue='Marke', ax=axis)
+st.pyplot(fig, use_container_width=True)
+
+
+
+
+
+
+st.header('Automobilių pasiskirstymas pagal kuro rūšį')
+kuras = df['Kuras'].value_counts()
+fig, ax1 = plt.subplots(figsize=(8, 4.5))
+B1 = ax1.bar(kuras.index, kuras.values)
+ax1.bar_label(B1)
+ax1.tick_params(axis='x', rotation=45)
+st.pyplot(fig, use_container_width=True)
+
+
+
+st.header('Top 10 gamintojų kainos priklausomybė nuo amžiaus')
+fig, axis = plt.subplots()
+df_top_amz = df[df['Marke'].isin(top10g)][['Marke', 'amzius', 'price']]
+
+df_top_amz_gr = df_top_amz.groupby(['Marke', 'amzius']).mean(numeric_only=True)
+
+sns.scatterplot(data=df_top_amz_gr, x='amzius', y='price', hue='Marke')
+st.pyplot(fig, use_container_width=True)
+
+
+
+st.header('Top 10 gamintojų automobilių galios pasiskirstymas')
+df_x = df[(df['Marke'].isin(top10g)) & (df['galia'] != 'None')]
+
+fig, axes = plt.subplots(figsize=(12, 4.5))
+
+
+sns.boxplot(data=df_x,x = 'Marke', y='galia', showmeans=True, showfliers=False)
+axes.set_xticklabels(axes.get_xticklabels(), rotation=90)
+axes.set(xlabel='Markė',ylabel='Galingumas')
+# for container in ax.containers:
+#     ax.bar_label(container)
+axes.legend()
+st.pyplot(fig, use_container_width=True)
+
+
+
+
+st.header('Top 10 gamintojų automobilių ridos pasiskirstymas')
+df_x = df[(df['Marke'].isin(top10g)) & (df['rid'] != 'None')]
+
+fig, axes = plt.subplots(figsize=(12, 4.5))
+
+
+sns.boxplot(data=df_x,x = 'Marke', y='rid', showmeans=True, showfliers=False)
+axes.set_xticklabels(axes.get_xticklabels(), rotation=90)
+axes.set(xlabel='Markė',ylabel='Rida')
+# for container in ax.containers:
+#     ax.bar_label(container)
+axes.legend()
+st.pyplot(fig, use_container_width=True)
+
+
+
+st.header('Top 10 gamintojų automobilių amžiaus pasiskirstymas')
+df_x = df[(df['Marke'].isin(top10g)) & (df['amzius'] != 'None')]
+
+fig, axes = plt.subplots(figsize=(12, 4.5))
+
+
+sns.boxplot(data=df_x,x = 'Marke', y='amzius', showmeans=True, showfliers=False)
+axes.set_xticklabels(axes.get_xticklabels(), rotation=90)
+axes.set(xlabel='Markė',ylabel='Amžius')
+# for container in ax.containers:
+#     ax.bar_label(container)
+axes.legend()
+st.pyplot(fig, use_container_width=True)
+
+
+st.header('Defektai')
+
+fig, ax = plt.subplots()
+
+df_defektai = df[(df['Defektai'] != 'None')][['Defektai', 'Marke']]
+df_defektai.groupby(['Defektai'])['Marke'].count().plot(kind='bar')
+for container in ax.containers:
+    ax.bar_label(container)
+st.pyplot(fig)
+
+
+st.header('Automobiliai su Defektais')
+
+fig, ax = plt.subplots()
+
+df_defektai = df[(df['Defektai'] != 'None')][['Defektai', 'Marke']]
+df_defektai.groupby(['Marke'])['Defektai'].count().plot(kind='bar')
+for container in ax.containers:
+    ax.bar_label(container)
+st.pyplot(fig)
+
+
+st.header('EV')
+
+fig, ax = plt.subplots()
+
+df_elektra = df[(df['Kuras'] == 'Elektra')][['Kuras', 'Marke']]
+df_elektra.groupby(['Marke'])['Kuras'].count().plot(kind='bar')
+for container in ax.containers:
+    ax.bar_label(container)
+st.pyplot(fig)
+
+
+st.header('EV kainos')
+
+fig, ax = plt.subplots()
+
+df_elektra = df[(df['Kuras'] == 'Elektra')][['Kuras', 'Marke', 'price']]
+df_elektra.groupby(['Marke'])['price'].mean(numeric_only=True).plot(kind='bar')
+for container in ax.containers:
+    ax.bar_label(container)
+st.pyplot(fig)
+
+
+st.header('EV kainos nuo amžiaus (Tesla)')
+
+fig, ax = plt.subplots()
+
+df_elektra = df[(df['Kuras'] == 'Elektra')& (df['Marke'] == 'Tesla')][['amzius', 'Marke', 'price']]
+df_elektra.groupby(['amzius'])['price'].mean(numeric_only=True).plot(kind='line')
+# for container in ax.containers:
+#     ax.bar_label(container)
+st.pyplot(fig)
+
+st.header('EV kainos ridos (Tesla)')
+
+fig, ax = plt.subplots()
+
+df_elektra = df[(df['Kuras'] == 'Elektra') & (df['Marke'] == 'Tesla')][['R5000', 'Marke', 'price']]
+df_elektra.groupby(['R5000'])['price'].mean(numeric_only=True).plot(kind='line')
+# for container in ax.containers:
+#     ax.bar_label(container)
+st.pyplot(fig)
+
+
+
+st.header('EV kainos ridos (Tesla)')
+#  skaidyti per du grupavimus, paskui reikia pastumti stulpelius
+fig, ax1 = plt.subplots()
+ax2 = ax1.twinx()
+
+df_elektra = df[(df['Kuras'] == 'Elektra') & (df['Marke'] == 'Tesla')][['rid','amzius', 'Marke', 'price']]
+df_elektra.groupby(['amzius'])[['rid', 'price']].mean().plot(kind='bar', ax=ax1)
+for container in ax1.containers:
+    ax1.bar_label(container)
+# st.pyplot(fig)
+plt.show()
+st.pyplot(fig)
