@@ -89,7 +89,29 @@ def flatten_and_get_unique(lst):
 
 #  Parašykite funkcijas ir testus toms funkcijoms:
 #  Funkcija turi grąžinti  5kių populiariausių gamintojų sąrašą
+def get_pop_auto():
+    import sqlite3
+    conn = sqlite3.connect('../../../web_scrap.db')
+    cursor = conn.cursor()
+
+    sql = "SELECT Markė, count(*) as Kiekis FROM autopliuslt2 group by Markė order by Kiekis desc limit 5"
+    cursor.execute(sql)
+    result = cursor.fetchall()
+    conn.close()
+    x, y = list(map(list, zip(*result)))
+    return x
 #  Funkcija turi surasti vidutines auto kainas (sąrašą) top 5kiems gamintojams.
+def get_pop_auto_avg_prices():
+    import sqlite3
+    conn = sqlite3.connect('../../../web_scrap.db')
+    cursor = conn.cursor()
+
+    sql = "SELECT Markė, count(*) as Kiekis, AVG(Kaina) FROM autopliuslt2 group by Markė order by Kiekis desc limit 5"
+    cursor.execute(sql)
+    result = cursor.fetchall()
+    conn.close()
+    x, y, z = list(map(list, zip(*result)))
+    return z
 #  Fukcija turi
 #  SVARBU : duomenis turite šioms funkcijoms pateikti iš savo SQLite DB, pasinaudoti setUp metodu. SQLite DB turi pateikti raw duomenis (nerikiuoti, neapdoroti, negrupuoti papildomai).
 # pasinaudokite tearDown() metodu - uždarykite SQLite DB po testų.
