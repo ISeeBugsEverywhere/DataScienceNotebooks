@@ -67,7 +67,6 @@ def sphere_surface_area(radius):
 
 
 import sqlite3
-from collections import Counter
 import pandas as pd
 
 def car_data(conn):
