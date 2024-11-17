@@ -82,3 +82,50 @@ df['R5000'] = df[df['rida'] != None]['rida'].apply(lambda x: float(np.ceil(x/500
 df['ea50'] = df[df['eatstumas'] != None]['eatstumas'].apply(lambda x: float(np.ceil(x/50) * 50))
 
 
+# duomenys filtrams
+gamintojai_kiekiai =df['gamintojas'].value_counts()
+g = gamintojai_kiekiai[gamintojai_kiekiai.values >= 10]
+gamintojai = ['--pasirinkite--'] + sorted(list(g.index))
+
+kuro_tipai = ['--pasirinkite--'] + sorted(list(set(df['Kuro tipas'].tolist()))) 
+
+pavaros = ['--pasirinkite--'] + ['Mechaninė', 'Automatinė']
+
+kebulo_tipai = ['--pasirinkite--'] + sorted(list(set(df[df['Kėbulo tipas'].notna()]['Kėbulo tipas'].tolist())))
+
+my_list = list(range(2024, 1927, -1))
+metai = ['--pasirinkite--'] + my_list
+
+# Vartotojo pasirinkimai
+selected_gamintojas = st.selectbox('Pasirinkite gamintoją:', gamintojai)
+selected_metai = st.selectbox('Pasirinkite automobilio pagaminimo metus', metai)
+selected_rida = st.slider("Pasirinkite automobilio ridą:", min_value=0, max_value=500000, step=1000)
+selected_kuras =st.selectbox('Pasirinkite kuro tipą', kuro_tipai)
+selected_pavara = st.selectbox('Pasirinkite pavarų dėžę', pavaros)
+selected_kebulas = st.selectbox('Pasirinkite kėbulo tipą', kebulo_tipai)
+
+
+if isinstance(selected_metai, int):
+    selected_amz = 2024 - selected_metai
+
+
+
+# Create a button in Streamlit
+if st.button('Ieškoti'):
+    # kai nuspaudžiamas mygtukas
+    st.write(f"Pasirinktas gamintojas: {selected_gamintojas}, automobilio amžius: {selected_amz}, rida: {selected_rida}") 
+    
+    df_rida = df[df['gamintojas'] == selected_gamintojas][['kaina', 'R5000']]
+    df_rida.dropna(inplace=True)
+    df_rida_gr = df_rida.groupby('R5000').mean(numeric_only=True).reset_index()
+
+    df_rida_gr2 = df_rida_gr[df_rida_gr['R5000'] < 500000]
+
+    fig, axis = plt.subplots(figsize=(8, 4.5))
+    sns.regplot(data=df_rida_gr2, x='R5000', y='kaina', order=3)
+    # axis.axhline(y=0)
+    st.pyplot(fig)
+    
+
+
+
