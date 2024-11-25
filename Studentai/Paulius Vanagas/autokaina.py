@@ -64,7 +64,7 @@ def sutvarko_duomenis(df):
 def get_gamintojas(df):
     dftop = df.groupby('gamintojas').count()
     dftop = dftop.sort_values(by='kaina', ascending=False)
-    dftop = dftop.head(7)
+    dftop = dftop.head(30)
     top7 = dftop.index.to_list()
     gamintojas = st.selectbox('Pasirinkite gamintoją:', top7)
     df1=df[df['gamintojas']==gamintojas]
