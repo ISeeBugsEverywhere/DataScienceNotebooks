@@ -32,10 +32,10 @@ class properties_of:
         elif engine == "pandas":
             self.df_property = pd.DataFrame(columns=["object_id", "property_id", "value"])
             self.df_property_type = pd.DataFrame(columns=["property_id", "description"])
-        elif engine == "pyspark":
-            self.spark = SparkSession.builder.master("local").appName("PropertiesDB").getOrCreate()
-            self.df_property = self.spark.createDataFrame([], schema="object_id STRING, property_id STRING, value STRING")
-            self.df_property_type = self.spark.createDataFrame([], schema="property_id STRING, description STRING")
+        # elif engine == "pyspark":
+        #     self.spark = SparkSession.builder.master("local").appName("PropertiesDB").getOrCreate()
+        #     self.df_property = self.spark.createDataFrame([], schema="object_id STRING, property_id STRING, value STRING")
+        #     self.df_property_type = self.spark.createDataFrame([], schema="property_id STRING, description STRING")
         else:
             raise ValueError("Nepalaikomas duomenų bazės variklis: pasirinkite 'sqlite_memory', 'sqlite_file', 'pandas' arba 'pyspark'.")
 
