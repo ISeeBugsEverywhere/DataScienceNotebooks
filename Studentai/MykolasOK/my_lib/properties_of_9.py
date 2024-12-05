@@ -2,7 +2,7 @@ import sqlite3
 import pandas as pd
 from pyspark.sql import SparkSession
 from typing import List, Optional, Union
-
+# 2024-12-05 (nauja versija)
 
 class properties_of:
     def __init__(self, name: str, engine: str = "sqlite_memory", db_path: Optional[str] = None):
@@ -20,11 +20,11 @@ class properties_of:
             self.cursor = self.conn.cursor()
             self._create_tables()
         elif engine == "pandas":
-            self.df_property = pd.DataFrame(columns=["object_id", "property_id", "value"])
+            self.df_property = pd.DataFrame(columns=["id", "property_id", "value"])
             self.df_property_type = pd.DataFrame(columns=["property_id", "description"])
         elif engine == "pyspark":
             self.spark = SparkSession.builder.master("local").appName("PropertiesDB").getOrCreate()
-            self.df_property = self.spark.createDataFrame([], schema="object_id STRING, property_id STRING, value STRING")
+            self.df_property = self.spark.createDataFrame([], schema="id STRING, property_id STRING, value STRING")
             self.df_property_type = self.spark.createDataFrame([], schema="property_id STRING, description STRING")
         else:
             raise ValueError("Nepalaikomas duomenų bazės variklis: pasirinkite 'sqlite_memory', 'sqlite_file', 'pandas' arba 'pyspark'.")
@@ -33,10 +33,10 @@ class properties_of:
         """Sukuriamos lentelės SQLite duomenų bazėje."""
         self.cursor.execute(f"""
             CREATE TABLE IF NOT EXISTS {self.name}_property (
-                object_id TEXT,
+                id TEXT,
                 property_id TEXT,
                 value TEXT,
-                PRIMARY KEY (object_id, property_id)
+                PRIMARY KEY (id, property_id)
             )
         """)
         self.cursor.execute(f"""
@@ -47,21 +47,21 @@ class properties_of:
         """)
         self.conn.commit()
 
-    def add_property(self, object_id: str, property_id: str, value: str, check_property_type: bool = False) -> None:
+    def add_property(self, id: str, property_id: str, value: str, check_property_type: bool = False) -> None:
         """Pridedama savybė konkrečiam objektui."""
         if self.engine == "pandas":
             if check_property_type and property_id not in self.df_property_type["property_id"].values:
                 raise ValueError(f"Savybės ID '{property_id}' nėra savybių tipų lentelėje.")
             self.df_property = pd.concat([
                 self.df_property,
-                pd.DataFrame({"object_id": [object_id], "property_id": [property_id], "value": [value]})
-            ], ignore_index=True).drop_duplicates(subset=["object_id", "property_id"])
+                pd.DataFrame({"id": [id], "property_id": [property_id], "value": [value]})
+            ], ignore_index=True).drop_duplicates(subset=["id", "property_id"])
         elif self.engine == "pyspark":
             if check_property_type:
                 existing = self.df_property_type.filter(f"property_id = '{property_id}'").count() > 0
                 if not existing:
                     raise ValueError(f"Savybės ID '{property_id}' nėra savybių tipų lentelėje.")
-            new_row = self.spark.createDataFrame([(object_id, property_id, value)], schema="object_id STRING, property_id STRING, value STRING")
+            new_row = self.spark.createDataFrame([(id, property_id, value)], schema="id STRING, property_id STRING, value STRING")
             self.df_property = self.df_property.union(new_row)
         else:
             if check_property_type:
@@ -71,39 +71,62 @@ class properties_of:
                 if not self.cursor.fetchone():
                     raise ValueError(f"Savybės ID '{property_id}' nėra savybių tipų lentelėje.")
             self.cursor.execute(f"""
-                INSERT OR REPLACE INTO {self.name}_property (object_id, property_id, value)
+                INSERT OR REPLACE INTO {self.name}_property (id, property_id, value)
                 VALUES (?, ?, ?)
-            """, (object_id, property_id, value))
+            """, (id, property_id, value))
             self.conn.commit()
 
-    def import_from_df(self, df: pd.DataFrame, id: str = "id") -> None:
-        """Importuoja savybes iš Pandas DataFrame į duomenų bazę."""
-        for _, row in df.iterrows():
-            object_id = row[id]
-            for property_id, value in row.drop(id).items():
-                self.add_property(id, property_id, value)
-
-    def export_to_df(self, properties: Optional[List[str]] = None) -> pd.DataFrame:
+    def export_to_narrow(self) -> pd.DataFrame:
         """
-        Eksportuoja savybes į Pandas DataFrame.
+        Eksportuoja savybes į siauro formato Pandas DataFrame.
+
+        :return: Pandas DataFrame su stulpeliais ['id', 'property_id', 'value'].
+        """
+        if self.engine == "pandas":
+            return self.df_property.copy()
+        elif self.engine == "pyspark":
+            return self.df_property.toPandas()
+        else:
+            self.cursor.execute(f"SELECT * FROM {self.name}_property")
+            rows = self.cursor.fetchall()
+            return pd.DataFrame(rows, columns=["id", "property_id", "value"])
+
+    def import_from_narrow(self, df: pd.DataFrame) -> None:
+        """
+        Importuoja siauro formato Pandas DataFrame į duomenų bazę.
+
+        :param df: Pandas DataFrame su stulpeliais ['id', 'property_id', 'value'].
+        """
+        for _, row in df.iterrows():
+            self.add_property(row["id"], row["property_id"], row["value"])
+
+    def export_to_wide(self, properties: Optional[List[str]] = None) -> pd.DataFrame:
+        """
+        Eksportuoja savybes į platų Pandas DataFrame.
 
         :param properties: Savybių sąrašas. Jei `None`, grąžina visas savybes.
         :return: Pandas DataFrame su kiekvienai savybei atskiru stulpeliu.
         """
-        if self.engine == "pandas":
-            df = self.df_property.pivot(index="id", columns="property_id", values="value").reset_index()
-        elif self.engine == "pyspark":
-            df = self.df_property.toPandas().pivot(index="id", columns="property_id", values="value").reset_index()
-        else:
-            self.cursor.execute(f"SELECT * FROM {self.name}_property")
-            rows = self.cursor.fetchall()
-            df = pd.DataFrame(rows, columns=["id", "property_id", "value"]).pivot(index="object_id", columns="property_id", values="value").reset_index()
+        df_narrow = self.export_to_narrow()
+        df = df_narrow.pivot(index="id", columns="property_id", values="value").reset_index()
 
         if properties:
             all_columns = ["id"] + properties
             df = df.reindex(columns=all_columns, fill_value=None)
 
         return df
+
+    def import_from_wide(self, df: pd.DataFrame) -> None:
+        """
+        Importuoja savybes iš plataus Pandas DataFrame.
+
+        :param df: Pandas DataFrame su stulpeliais: `id`, savybės ir jų reikšmės.
+        """
+        id_col = "id"
+        for _, row in df.iterrows():
+            for property_id, value in row.drop(labels=[id_col]).items():
+                if pd.notna(value):
+                    self.add_property(row[id_col], property_id, value)
 
     def close(self) -> None:
         """Uždaromas SQLite ryšys arba PySpark sesija."""
@@ -117,22 +140,26 @@ def main() -> None:
     # Testavimas
     obj = properties_of("knyga", engine="sqlite_memory")
 
-    # Test import_from_df
+    # Test import_from_wide
     data = pd.DataFrame({
         "id": ["111-222-333", "222-333-444"],
         "title": ["Lapė Snapė", "Vilkas Pilkas"],
         "author": ["Jojas Papievis", "Antanas Antanaitis"],
         "year": ["2020", "1900"]
     })
-    obj.import_from_df(data)
+    obj.import_from_wide(data)
 
-    # Test export_to_df
-    print("Eksportuotos savybės:")
-    print(obj.export_to_df())
+    # Eksportavimas į siaurą lentelę
+    narrow = obj.export_to_narrow()
+    print("Siauras formatas:")
+    print(narrow)
 
-    # Eksportuojame tik konkrečias savybes
-    print("Tik 'title' ir 'year':")
-    print(obj.export_to_df(properties=["title", "year"]))
+    # Importavimas iš siauro formato
+    obj.import_from_narrow(narrow)
+
+    # Eksportas į platų formatą
+    print("Platus formatas:")
+    print(obj.export_to_wide())
 
     obj.close()
 
