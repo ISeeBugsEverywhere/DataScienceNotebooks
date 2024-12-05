@@ -371,9 +371,310 @@ if selected_option == 'Šaldytuvai':
     plt.title('Šaldytuvų kainų priklausomybė nuo triukšmo lygio')
     plt.legend()
     st.pyplot(fig, use_container_width=True)
+    
+    # Gamintojai #######################
+    SDB = sqlite3.connect('VarlePigu.db')
+    Cs = SDB.cursor()
+
+    sql="""SELECT kaina, 
+    gamintojas,
+    spalva,
+    `gaminio spalva`,
+    `produkto spalva`,
+    `korpuso spalva`
+    FROM "SaldytuvaiVarle";
+    """
+    df = pd.read_sql_query(sql, con=SDB)
+
+    sql2="""SELECT kaina, 
+    `Prekės ženklas:`,
+    `Spalva:`
+    FROM "SaldytuvaiPigu";
+    """
+    dfp = pd.read_sql_query(sql2, con=SDB)
+    SDB.close()
+    # duomenys Varle
+    df['kaina'] = df['kaina'].apply(lambda x: float(x))
+    top_v = df['gamintojas'].value_counts().head(10).index.tolist()
+    df_gamintojas = df[df['gamintojas'].isin(top_v)][['kaina', 'gamintojas']]
+    df_gamintojas['saltinis'] = 'Varle.lt'
+    # duomenys Pigu
+    dfp['gamintojas'] = dfp['Prekės ženklas:']
+    top_p = dfp['gamintojas'].value_counts().head(10).index.tolist()
+    dfp_gamintojas = dfp[dfp['gamintojas'].isin(top_p)][['kaina', 'gamintojas']]
+    dfp_gamintojas['saltinis'] = 'Pigu.lt'
+
+    # sujungiame df
+    df_combined = pd.concat([df_gamintojas, dfp_gamintojas])
+
+    fig, ax = plt.subplots()
+    sns.boxplot(data=df_combined, y='kaina', x='gamintojas', hue='saltinis', showfliers=False, showmeans=True)
+    plt.title('Šaldytuvų kainos pasiskirtymas pagal gamintoją')
+    plt.tick_params(axis='x', rotation=90)
+    plt.xlabel('')
+    plt.ylabel('Kaina')
+    st.pyplot(fig, use_container_width=True)
+    
+    # Gamintojai Varle
+    SDB = sqlite3.connect('VarlePigu.db')
+    Cs = SDB.cursor()
+
+    sql="""SELECT kaina, 
+    gamintojas,
+    spalva,
+    `gaminio spalva`,
+    `produkto spalva`,
+    `korpuso spalva`
+    FROM "SaldytuvaiVarle";
+    """
+    df = pd.read_sql_query(sql, con=SDB)
+    SDB.close()
+    for col in df.columns:
+        if col not in ['kaina', 'gamintojas']:
+            df['spalva'] = df['spalva'].fillna(df[col])
+
+    df['kaina'] = df['kaina'].apply(lambda x: float(x))
+
+    def set_spalva(x):
+        if x is not None:
+            if 'Balt' in x or 'balt' in x:
+                return 'Balta'
+            elif 'Pilk' in x or 'pilk' in x:
+                return 'Pilka'
+            elif 'Juod' in x or 'juod' in x:
+                return 'Juoda'
+            else:
+                return x
+
+    df['spalva'] = df['spalva'].apply(set_spalva)
+    colors_counts = df['spalva'].value_counts()
+    colors_to_plot = colors_counts[colors_counts > 40].index
+    brand_counts = df['gamintojas'].value_counts()
+    brands_to_plot = brand_counts[brand_counts > 40].index
+
+    df_gamintojas = df[(df['gamintojas'].isin(brands_to_plot)) & df['spalva'].isin(colors_to_plot)][['kaina', 'gamintojas', 'spalva']]
+    df_gamintojas_gr = df_gamintojas.groupby(['gamintojas', 'spalva']).mean().round()
+    fig, ax = plt.subplots()
+    sns.barplot(data=df_gamintojas_gr, x='kaina', y='gamintojas', orient='h', hue='spalva')
+    # sns.boxplot(data=df_gamintojas, x='kaina', y='gamintojas', hue='spalva', showmeans=True, showfliers=False)
+    plt.title('Vidutinė šaldytuvų kaina pagal gamintoją (Varle.lt)')
+    plt.ylabel('')
+    plt.xlabel('Kaina')
+    st.pyplot(fig, use_container_width=True)
+    
+    # Gamintojai Pigu
+    SDB = sqlite3.connect('VarlePigu.db')
+    Cs = SDB.cursor()
+
+    sql="""SELECT kaina, 
+    `Prekės ženklas:`,
+    `Spalva:`
+    FROM "SaldytuvaiPigu";
+    """
+    df = pd.read_sql_query(sql, con=SDB)
+    SDB.close()
+    def set_spalva(x):
+        if x is not None:
+            if 'Juod' in x:
+                return 'Juoda'
+            elif 'Balt' in x:
+                return 'Balta'
+            else:
+                return x
+            
+    df['spalva'] = df['Spalva:'].apply(set_spalva)
+    colors_counts = df['spalva'].value_counts()
+    colors_to_plot = colors_counts[colors_counts > 20].index
+    brand_counts = df['Prekės ženklas:'].value_counts()
+    brands_to_plot = brand_counts[brand_counts > 40].index
+
+    df_gamintojas = df[(df['Prekės ženklas:'].isin(brands_to_plot)) & df['spalva'].isin(colors_to_plot)][['kaina', 'Prekės ženklas:', 'spalva']]
+    df_gamintojas_gr = df_gamintojas.groupby(['Prekės ženklas:', 'spalva']).mean().round()
+    fig, ax = plt.subplots()
+    sns.barplot(data=df_gamintojas_gr, x='kaina', y='Prekės ženklas:', orient='h', hue='spalva')
+    # sns.boxplot(data=df_gamintojas, x='kaina', y='gamintojas', hue='spalva', showmeans=True, showfliers=False)
+    plt.title('Vidutinė šaldytuvų kaina pagal gamintoją (Pigu.lt)')
+    plt.ylabel('')
+    plt.xlabel('Kaina')
+    st.pyplot(fig, use_container_width=True)
         
 if selected_option == 'Dronai':
-    st.write('Informacija ruošiama')
+    # Varle gamintojai
+    SDB = sqlite3.connect('VarlePigu.db')
+    C = SDB.cursor()
+    sql="""select kaina, Gamintojas from DronaiVarle;"""
+    df = pd.read_sql_query(sql, con=SDB)
+
+    SDB.close()
+    top = df['Gamintojas'].value_counts().head(9).index.tolist()
+
+    df['brand'] = df['Gamintojas'].apply(lambda x: x if x in top else 'Kita')
+    c = df['brand'].value_counts()
+    df['kaina'] = df['kaina'].apply(lambda x: float(x))
+
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(8, 4.5))
+    # ax.pie(c.values, labels=c.index, autopct='%.f%%')
+    ax1.pie(c.values, 
+            labels=c.index, 
+            autopct='%.f%%',
+            textprops={'fontsize':8, 'color': 'black'},
+            startangle=45,
+            # move the percentage inside the arcs
+            pctdistance=0.75,
+            # add spaces between the arcs
+            # explode=[0.05, 0.05, 0.05, 0.05, 0.05, 0.05]
+            )
+    ax1.set_title('Dronų gamintojai (Varle.lt)')
+    sns.boxplot(data=df, x='brand', y='kaina', ax=ax2, showmeans=True, showfliers=False)
+    ax2.tick_params(axis='x', rotation=90)
+    ax2.set_title('Dronų kainos pasiskirtysmas pagal gamintoją (Varle.lt)')
+    plt.tight_layout()
+    st.pyplot(fig, use_container_width=True)
+    
+    st.header('')
+    
+    def set_kaina(x):
+        return float(x)
+    df['kaina'] = df['kaina'].apply(set_kaina)
+
+    df_gr = df.groupby('brand').mean(numeric_only=True).round()
+    fig, ax = plt.subplots(figsize=(8, 4.5))
+    sns.barplot(data=df_gr, x='brand', y='kaina')
+    ax.tick_params(axis='x', rotation=90)
+    for container in ax.containers:
+        ax.bar_label(container)
+    st.pyplot(fig, use_container_width=True)
+    
+    st.header('')
+    
+    # Pigu gamintojai
+    SDB = sqlite3.connect('VarlePigu.db')
+    C = SDB.cursor()
+    sql="""select kaina, 
+    `Prekės ženklas:`,
+    `Tipas:`
+    from DronaiPigu;"""
+    df_ivairus = pd.read_sql_query(sql, con=SDB)
+
+    SDB.close()
+    df_ivairus.head() 
+    df = df_ivairus[(df_ivairus['Tipas:'] == 'Dronas') | (df_ivairus['Tipas:'] == 'Komplektas')]
+
+    top = df['Prekės ženklas:'].value_counts().head(10).index.tolist()
+
+    fig, axis = plt.subplots()
+    sns.boxplot(data=df[df['Prekės ženklas:'].isin(top)], y='Prekės ženklas:', x='kaina', showmeans=True, showfliers=False)
+    axis.set_title('Dronų kainos pagal gamintoją (Pigu.lt)')
+    st.pyplot(fig, use_container_width=True)
+    df['gamintojas'] = df['Prekės ženklas:'].apply(lambda x: x if x  in top else 'Kita')
+    c = df['gamintojas'].value_counts()
+
+    fig, axis = plt.subplots()
+    axis.pie(c.values, 
+            labels=c.index, 
+            autopct='%.f%%',
+            textprops={'fontsize':8, 'color': 'black'},
+            startangle=45,
+            # move the percentage inside the arcs
+            pctdistance=0.75,
+            # add spaces between the arcs
+            # explode=[0.05, 0.05, 0.05, 0.05, 0.05, 0.05]
+            )
+    axis.set_title('Dronai (Pigu.lt)')
+    st.pyplot(fig, use_container_width=True)
+    
+    # skrydzio trukme Varle
+    SDB = sqlite3.connect('VarlePigu.db')
+    C = SDB.cursor()
+    sql="""select kaina, 
+    `Veikimo laikas (min)`,
+    `Didžiausias skrydžio laikas`
+    from DronaiVarle;"""
+    df = pd.read_sql_query(sql, con=SDB)
+
+    SDB.close()
+    df['Didžiausias skrydžio laikas'] = df['Didžiausias skrydžio laikas'].fillna(df['Veikimo laikas (min)'])
+    df.dropna(subset=('Didžiausias skrydžio laikas'), inplace=True)
+    df['laikas'] = df['Didžiausias skrydžio laikas'].str.extract('(\d+)')
+    df['laikas'] = df['laikas'].apply(lambda x: float(x))
+
+    df['kaina'] = df['kaina'].apply(lambda x: float(x))
+    df_laikas = df[['kaina', 'laikas']]
+    df_laikas_gr = df_laikas.groupby('laikas').mean(numeric_only=True).round().reset_index()
+    fig, axis = plt.subplots()
+    sns.scatterplot(data=df_laikas_gr, x='laikas', y='kaina')
+    plt.title('Dronų kaina nuo skrydimo laiko (Varle.lt)')
+    st.pyplot(fig, use_container_width=True)
+    
+    
+    # skrydzio laikas/atstumas
+    SDB = sqlite3.connect('VarlePigu.db')
+    C = SDB.cursor()
+    sql="""select kaina, 
+    `Veikimo atstumas:`,
+    `Skraidymo laikas:`,
+    `Tipas:`
+    from DronaiPigu;"""
+    df_ivairus = pd.read_sql_query(sql, con=SDB)
+
+    SDB.close()
+    df = df_ivairus[(df_ivairus['Tipas:'] == 'Dronas') | (df_ivairus['Tipas:'] == 'Komplektas')]
+    df['laikas'] = df['Skraidymo laikas:'].str.extract('(\d+)')
+    df['veikimoAtstumas'] = df['Veikimo atstumas:'].str.extract('(\d+)')
+    df.dropna(subset=['laikas', 'veikimoAtstumas'], inplace=True)
+    df['laikas'] = df['laikas'].apply(lambda x: float(x))
+    df['veikimoAtstumas'] = df['veikimoAtstumas'].apply(lambda x: float(x))
+    pairplot = sns.pairplot(data=df)
+    st.pyplot(pairplot)
+    
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10, 4.5))
+    sns.regplot(data=df[df['kaina'] < 15000], x='laikas', y='kaina', order=1, ax=ax1)
+    sns.regplot(data=df[df['kaina'] < 15000], x='veikimoAtstumas', y='kaina', order=1, ax=ax2)
+    ax1.set_title('Kainos priklausomybė nuo veikimo laiko (Pigu.lt)')
+    ax2.set_title('Kainos priklausomybė nuo veikimo atstumo (Pigu.lt)')
+    plt.tight_layout()
+    st.pyplot(fig, use_container_width=True)
+    
+    
+    # GPS, kamera, stabilizacija
+    SDB = sqlite3.connect('VarlePigu.db')
+    C = SDB.cursor()
+    sql="""select kaina, 
+    `GPS:`,
+    `Skrydžio stabilizacija:`,
+    `Kamera:`,
+    `Tipas:`
+    from DronaiPigu;"""
+    df_ivairus = pd.read_sql_query(sql, con=SDB)
+
+    SDB.close()
+    df = df_ivairus[(df_ivairus['Tipas:'] == 'Dronas') | (df_ivairus['Tipas:'] == 'Komplektas')]
+    df_stab = df[['kaina', 'Skrydžio stabilizacija:']]
+    df_stab_gr = df.groupby('Skrydžio stabilizacija:').mean(numeric_only=True).round().reset_index()
+
+    df_kam = df[['kaina', 'Kamera:']]
+    df_kam_gr = df.groupby('Kamera:').mean(numeric_only=True).round().reset_index()
+
+    df_gps = df[['kaina', 'Kamera:']]
+    df_gps_gr = df.groupby('GPS:').mean(numeric_only=True).round().reset_index()
+
+    fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(12, 4.5))
+    sns.barplot(data=df_stab_gr, x='Skrydžio stabilizacija:', y='kaina', ax=ax1)
+    sns.barplot(data=df_kam_gr, x='Kamera:', y='kaina', ax=ax2)
+    sns.barplot(data=df_gps_gr, x='GPS:', y='kaina', ax=ax3)
+    for container in ax1.containers:
+        ax1.bar_label(container)
+    for container in ax2.containers:
+        ax2.bar_label(container)
+    for container in ax3.containers:
+        ax3.bar_label(container)
+    plt.tight_layout()
+    ax1.set_title('Vidutinė drono kaina (Pigu.lt)')
+    ax2.set_title('Vidutinė drono kaina (Pigu.lt)')
+    ax3.set_title('Vidutinė drono kaina (Pigu.lt)')
+    st.pyplot(fig, use_container_width=True)
+    
+    
 if selected_option == 'Planšetiniai kompiuteriai':
     st.write('Informacija ruošiama')
 if selected_option == 'Televizoriai':
