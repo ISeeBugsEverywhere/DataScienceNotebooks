@@ -25,6 +25,124 @@ if selected_option == 'Šaldytuvai':
     # Saldytuvai
     SDB = sqlite3.connect('VarlePigu.db')
     Cs = SDB.cursor()
+    
+    sql="""SELECT kaina, `montavimo tipas`
+    FROM "SaldytuvaiVarle";
+    """
+    df = pd.read_sql_query(sql, con=SDB)
+
+    SDB.close()
+
+    df.dropna(subset='montavimo tipas', inplace=True)
+    def set_saldytuvo_tipas(x):
+        if 'stat' in x:
+            return 'Laivai pastatomi'
+        elif 'montuo' in x:
+            return 'Įmontuojami'
+        elif 'ntegruo' in x:
+            return 'Integruojami'
+        else:
+            return 'Kita'
+        
+    df['mtipas'] =df['montavimo tipas'].apply(set_saldytuvo_tipas)
+    df['kaina'] = df['kaina'].apply(lambda x: float(x))
+    c =df['mtipas'].value_counts()
+    fig, (axis1, axis2) = plt.subplots(1,2, figsize=(10.5, 4.5))
+    axis1.pie(c.values, labels=c.index, autopct='%.2f%%')
+    sns.boxplot(data=df, x='mtipas', y='kaina', showmeans=True, showfliers=False, ax=axis2)
+    axis1.set_title('Šaldytuvų pasiskirstymas pagal montavimo tipą (Varle.lt)')
+    axis2.set_title('Kainų pasiskirstymas pagal šaldytuvų  montavimo tipą (Varle.lt)')
+    axis2.set_xlabel('Tipas')
+    axis2.set_ylabel('Kaina')
+    fig.tight_layout()
+    st.pyplot(fig, use_container_width=True)
+
+
+    # Saldytuvai Pigu montavimo tipas
+    SDB = sqlite3.connect('VarlePigu.db')
+    Cs = SDB.cursor()
+
+    sql="""SELECT kaina,
+    `Montavimo tipas:`
+    FROM "SaldytuvaiPigu";
+    """
+    df = pd.read_sql_query(sql, con=SDB)
+    SDB.close()
+    c = df['Montavimo tipas:'].value_counts()
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 4.5))
+    ax1.pie(c.values, labels=c.index, autopct='%.2f%%', startangle=90)
+    sns.boxplot(data=df, x='Montavimo tipas:', y='kaina', ax=ax2, showmeans=True, showfliers=False)
+    ax1.set_title('Šaldytuvai pagal montavimo tipą (Pigu.lt)')
+    ax2.set_title('Šaldytuvų kainos pasiskirtymas pagal montavimo tipą (Pigu.lt)')
+    fig.tight_layout()
+    st.pyplot(fig, use_container_width=True)
+
+
+    # Saldytuvai Varle tipas
+    SDB = sqlite3.connect('VarlePigu.db')
+    Cs = SDB.cursor()
+
+    sql="""SELECT kaina, tipas
+    FROM "SaldytuvaiVarle";
+    """
+    df = pd.read_sql_query(sql, con=SDB)
+    SDB.close()
+    df.dropna(subset='tipas', inplace=True)
+
+    def set_saldytuvo_tipas(x):
+        if 'apa' in x:
+            return 'Šaldytuvas su šaldikliu apačioje'
+        elif 'virš' in x or 'with top' in x:
+            return 'Šaldytuvas su šaldikliu viršuje'
+        elif 'Mini' in x:
+            return 'Mini'
+        elif 'without' in x or 'Be k' in x:
+            return 'Šaldytuvas be šaldiklio'
+        elif 'kamera' in x or 'inside' in x:
+            return 'Šaldytuvas su šaldikliu viduje'
+        elif 'Dvid'in x or 'Double' in x:
+            return 'Dviduriai šaldytuvai'
+        elif 'stat' in x:
+            return 'Laisvai pastatomas'
+        else:
+            return x
+        
+    df['stipas'] =df['tipas'].apply(set_saldytuvo_tipas)
+    top = df['stipas'].value_counts().head(10).index.tolist()
+    df['stipas'] = df['stipas'].apply(lambda x: x if x in top else 'Kita')
+    c = df['stipas'].value_counts()
+
+    fig, ax = plt.subplots(figsize=(8, 4.5))
+    ax.pie(c.values, labels=c.index, autopct='%.1f%%')
+    plt.title('Šaldytuvų pasiskirstymas pagal tipą (Varle.lt)')
+    st.pyplot(fig, use_container_width=True)
+
+
+    # Saldytuvai Pigu tipas
+    SDB = sqlite3.connect('VarlePigu.db')
+    Cs = SDB.cursor()
+
+    sql="""SELECT kaina,
+    `Šaldytuvo tipas:`
+    FROM "SaldytuvaiPigu";
+    """
+    df = pd.read_sql_query(sql, con=SDB)
+    SDB.close()
+    c = df['Šaldytuvo tipas:'].value_counts()
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 6))
+    ax1.pie(c.values, labels=c.index, autopct='%.2f%%', startangle=33, pctdistance=0.7, labeldistance = 0.9, textprops={'fontsize':8, 'color': 'black'})
+    sns.boxplot(data=df, x='Šaldytuvo tipas:', y='kaina', ax=ax2, showmeans=True, showfliers=False)
+    ax1.set_title('Šaldytuvai pagal  tipą (Pigu.lt)')
+    ax2.set_title('Šaldytuvų kainos pasiskirtymas pagal tipą (Pigu.lt)')
+    ax2.set_xticklabels(ax2.get_xticklabels(), rotation=90)
+
+    fig.tight_layout()
+    st.pyplot(fig, use_container_width=True)
+
+
+    # saldytuvai talpa
+    SDB = sqlite3.connect('VarlePigu.db')
+    Cs = SDB.cursor()
 
     sql1="""SELECT kaina, `talpa (l)`, `naudinga šaldytuvo talpa`, `šaldytuvo talpa [l]`,
     `bendra talpa neto`, `šaldytuvo talpa neto`, `šaldytuvo talpa`, `bendros grynosios talpos`, `bendra talpa`, `šaldymo talpa`,
