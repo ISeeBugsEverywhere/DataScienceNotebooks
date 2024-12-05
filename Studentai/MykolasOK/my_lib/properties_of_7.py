@@ -81,7 +81,7 @@ class properties_of:
         for _, row in df.iterrows():
             object_id = row[id]
             for property_id, value in row.drop(id).items():
-                self.add_property(object_id, property_id, value)
+                self.add_property(id, property_id, value)
 
     def export_to_df(self, properties: Optional[List[str]] = None) -> pd.DataFrame:
         """
@@ -91,16 +91,16 @@ class properties_of:
         :return: Pandas DataFrame su kiekvienai savybei atskiru stulpeliu.
         """
         if self.engine == "pandas":
-            df = self.df_property.pivot(index="object_id", columns="property_id", values="value").reset_index()
+            df = self.df_property.pivot(index="id", columns="property_id", values="value").reset_index()
         # elif self.engine == "pyspark":
-        #     df = self.df_property.toPandas().pivot(index="object_id", columns="property_id", values="value").reset_index()
+        #     df = self.df_property.toPandas().pivot(index="id", columns="property_id", values="value").reset_index()
         else:
             self.cursor.execute(f"SELECT * FROM {self.name}_property")
             rows = self.cursor.fetchall()
-            df = pd.DataFrame(rows, columns=["object_id", "property_id", "value"]).pivot(index="object_id", columns="property_id", values="value").reset_index()
+            df = pd.DataFrame(rows, columns=["id", "property_id", "value"]).pivot(index="object_id", columns="property_id", values="value").reset_index()
 
         if properties:
-            all_columns = ["object_id"] + properties
+            all_columns = ["id"] + properties
             df = df.reindex(columns=all_columns, fill_value=None)
 
         return df
