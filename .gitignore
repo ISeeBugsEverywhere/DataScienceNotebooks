@@ -1,11 +1,15 @@
-# Duomemnų bazes saugome tik lokaliai (MOK, 2024-12-02)
+# Duomemnų bazės (MOK, 2024-12-02, 2024-12-08)
 *.db
+*.parquet
+*.feather
+*.csv
 
 # Vaizdo formatai (MOK, 2024-12-07)
 *.jpg
 *.jpeg
 *.png
 *.pdf
+*.svg
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
