@@ -674,9 +674,181 @@ if selected_option == 'Dronai':
     ax3.set_title('Vidutinė drono kaina (Pigu.lt)')
     st.pyplot(fig, use_container_width=True)
     
+    # Varle lentele
+    SDB = sqlite3.connect('VarlePigu.db')
+    C = SDB.cursor()
+    sql="""select kaina,
+    Gamintojas,
+    `Veikimo laikas (min)`,
+    `Didžiausias skrydžio laikas`,
+    `Svoris (kg)`,
+    `Baterijos talpa (mAh)`,
+    Talpa,
+    Stabilizavimas,
+    Tipas
+    from DronaiVarle;"""
+    df = pd.read_sql_query(sql, con=SDB)
+
+    SDB.close()
+    # df.head()
+
+    df['kaina'] = df['kaina'].apply(lambda x: float(x))
+    df['Didžiausias skrydžio laikas'] = df['Didžiausias skrydžio laikas'].fillna(df['Veikimo laikas (min)'])
+    df['Talpa'] = df['Talpa'].fillna(df['Baterijos talpa (mAh)'])
+    # # df.dropna(subset=('Didžiausias skrydžio laikas'), inplace=True)
+    df['laikas'] = df['Didžiausias skrydžio laikas'].str.extract('(\d+)')
+    df['laikas'] = df['laikas'].apply(lambda x: float(x))
+    df['Baterija'] = df['Talpa'].str.extract('(\d+)')
+    df['Baterija'] = df['Baterija'].apply(lambda x: float(x))
+
+    price_bins = [0, 100, 200, 400, 600,30000]
+    price_labels = ['iki 100', '101-200', '201-400', '401-600', ' nuo 600']
+    df_data = df[['kaina', 'Gamintojas', 'laikas', 'Baterija', 'Stabilizavimas', 'Tipas']]
+
+    df_data['price_range'] = pd.cut(df_data['kaina'], bins=price_bins, labels=price_labels, right=True)
+
+    grouped = df_data.groupby('price_range')
+    def safe_mode(x):
+        mode = x.mode()
+        return mode.iloc[0] if not mode.empty else None
+
+    # # find most comman
+    most_common_drone = grouped.agg({
+        # 'kaina': safe_mode,
+        'Gamintojas': safe_mode,
+        'laikas': safe_mode,
+        'Baterija': safe_mode,
+        'Stabilizavimas': safe_mode,
+        'Tipas': safe_mode
+    }).reset_index()
+    st.write('Labiausiai tikėtina dronas Varle.lt')
+    st.write(most_common_drone)
+    
+    # lentele pigu
+    SDB = sqlite3.connect('VarlePigu.db')
+    C = SDB.cursor()
+    sql="""select kaina, 
+    `Prekės ženklas:`,
+    `Veikimo atstumas:`,
+    `Skraidymo laikas:`,
+    `GPS:`,
+    `Skrydžio stabilizacija:`,
+    `Kamera:`,
+    `Tipas:`
+    from DronaiPigu;"""
+    df_ivairus = pd.read_sql_query(sql, con=SDB)
+
+    SDB.close()
+    df = df_ivairus[(df_ivairus['Tipas:'] == 'Dronas') | (df_ivairus['Tipas:'] == 'Komplektas')]
+
+    df['laikas'] = df['Skraidymo laikas:'].str.extract('(\d+)')
+    df['veikimoAtstumas'] = df['Veikimo atstumas:'].str.extract('(\d+)')
+    # df.dropna(subset=['laikas', 'veikimoAtstumas'], inplace=True)
+    df['laikas'] = df['laikas'].apply(lambda x: float(x))
+    df['veikimoAtstumas'] = df['veikimoAtstumas'].apply(lambda x: float(x))
+
+    price_bins = [0, 100, 200, 400, 600,30000]
+    price_labels = ['iki 100', '101-200', '201-400', '401-600', ' nuo 600']
+    df_data = df[['kaina', 'Prekės ženklas:', 'GPS:', 'Skrydžio stabilizacija:', 'Kamera:', 'laikas', 'veikimoAtstumas']]
+
+    df_data['price_range'] = pd.cut(df_data['kaina'], bins=price_bins, labels=price_labels, right=True)
+
+    grouped = df_data.groupby('price_range')
+    def safe_mode(x):
+        mode = x.mode()
+        return mode.iloc[0] if not mode.empty else None
+
+    # # find most comman
+    most_common_drone = grouped.agg({
+        # 'kaina': safe_mode,
+        'Prekės ženklas:': safe_mode,
+        'GPS:': safe_mode,
+        'Skrydžio stabilizacija:': safe_mode,
+        'Kamera:': safe_mode,
+        'laikas': safe_mode,
+        'veikimoAtstumas': safe_mode
+    }).reset_index()
+    st.write('Labiausiai tikėtinas dronas Pigu.lt')
+    st.write(most_common_drone)
+    
     
 if selected_option == 'Planšetiniai kompiuteriai':
-    st.write('Informacija ruošiama')
+    SDB = sqlite3.connect('VarlePigu.db')
+    C = SDB.cursor()
+    sql="""select kaina,
+    gamintojas
+    from PlanseteVarle;"""
+    df = pd.read_sql_query(sql, con=SDB)
+
+    SDB.close()
+    top = df['gamintojas'].value_counts().head(9).index.tolist()
+
+    df['brand'] = df['gamintojas'].apply(lambda x: x if x in top else 'Kita')
+    c = df['brand'].value_counts()
+    df['kaina'] = df['kaina'].str.extract('(\d+)')
+    df['kaina'] = df['kaina'].apply(lambda x: float(x))
+
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(8, 4.5))
+    # ax.pie(c.values, labels=c.index, autopct='%.f%%')
+    ax1.pie(c.values, 
+            labels=c.index, 
+            autopct='%.f%%',
+            textprops={'fontsize':8, 'color': 'black'},
+            startangle=45,
+            # move the percentage inside the arcs
+            pctdistance=0.75,
+            # add spaces between the arcs
+            # explode=[0.05, 0.05, 0.05, 0.05, 0.05, 0.05]
+            )
+    ax1.set_title('Planšetinių kompiuterių gamintojai (Varle.lt)')
+    sns.boxplot(data=df, x='brand', y='kaina', ax=ax2, showmeans=True, showfliers=False)
+    ax2.tick_params(axis='x', rotation=90)
+    ax2.set_title('Kainos pasiskirtysmas pagal gamintoją (Varle.lt)')
+    plt.tight_layout()
+    st.pyplot(fig, use_container_width=True)
+    
+    # top 15
+    SDB = sqlite3.connect('VarlePigu.db')
+    C = SDB.cursor()
+    sql="""select kaina,
+    gamintojas
+    from PlanseteVarle;"""
+    df = pd.read_sql_query(sql, con=SDB)
+
+    SDB.close()
+    df['kaina'] = df['kaina'].str.extract('(\d+)')
+    df['kaina'] = df['kaina'].apply(lambda x: float(x))
+    brand_counts = df['gamintojas'].value_counts()
+    brands_to_plot = brand_counts[brand_counts > 5].index
+
+    df_gamintojas = df[df['gamintojas'].isin(brands_to_plot)][['kaina', 'gamintojas']]
+    # Calculate the average price per brand
+    average_price_per_brand = df_gamintojas.groupby('gamintojas')['kaina'].mean().reset_index()
+    avg_price_sorted = average_price_per_brand.sort_values(by='kaina', ascending=True)
+    top5_low = avg_price_sorted['gamintojas'].head(5).tolist()
+    avg_price_sorted = average_price_per_brand.sort_values(by='kaina', ascending=False)
+    top5_high = avg_price_sorted['gamintojas'].head(5).tolist()
+    # print(top5_high)
+    # print(top5_low)
+    # # Find the median of the average prices
+    median_avg_price = average_price_per_brand['kaina'].median()
+    # print(median_avg_price)
+
+    # Find the 5 brands whose average prices are closest to the median
+    average_price_per_brand['price_diff_from_median'] = (average_price_per_brand['kaina'] - median_avg_price).abs()
+    top_5_middle_avg = average_price_per_brand.sort_values(by='price_diff_from_median').head(5)
+    top5_middle = top_5_middle_avg['gamintojas'].head(5).tolist()
+    # print(top5_middle)
+    top_brands = top5_high + top5_middle + top5_low
+    # print(top_brands)
+    df_brand = df_gamintojas[df_gamintojas['gamintojas'].isin(top_brands)]
+    df_brand.head()
+    fig, axis = plt.subplots()
+    sns.boxplot(data=df_brand, x='gamintojas', y='kaina', showmeans=True, showfliers=False)
+    plt.tick_params(axis='x', rotation=90)
+    plt.title('Top gamintojai kainos pasiskirstymas (Varle.lt)')
+    st.pyplot(fig, use_container_width=True)
+        
 if selected_option == 'Televizoriai':
     st.write('Informacija ruošiama')
 if selected_option == 'Dviračiai':
