@@ -848,6 +848,265 @@ if selected_option == 'Planšetiniai kompiuteriai':
     plt.tick_params(axis='x', rotation=90)
     plt.title('Top gamintojai kainos pasiskirstymas (Varle.lt)')
     st.pyplot(fig, use_container_width=True)
+
+    # ekrano size palyginimas
+    SDB = sqlite3.connect('VarlePigu.db')
+    C = SDB.cursor()
+    sql="""select kaina,
+    `ekrano įstrižainė`,
+    `ekrano dydis`,
+    `ekrano dydis (coliais)`,
+    `ekranas – įstrižainė (")`,
+    `įstrižainės ekranas`,
+    `ekrano dydis [coliais]`
+    from PlanseteVarle;"""
+    df = pd.read_sql_query(sql, con=SDB)
+
+    sql2="""select kaina,
+    `Ekrano įstrižainė:`,
+    `Prekės ženklas:`
+    from PlansetePigu;"""
+    dfp = pd.read_sql_query(sql2, con=SDB)
+
+    SDB.close()
+    # varle
+    df['kaina'] = df['kaina'].str.extract('(\d+)')
+    df['kaina'] = df['kaina'].apply(lambda x: float(x))
+    for col in df.columns:
+        if col != 'kaina':
+            df['ekrano įstrižainė'] = df['ekrano įstrižainė'].fillna(df[col])
+
+    df.dropna(subset='ekrano įstrižainė', inplace=True)
+
+    def set_size(x):
+        if 'cm' in x:
+            size_cm = float(x.split(' ')[0].replace(',', '.'))
+            coliai = round(size_cm /2.54, 1)
+            return coliai
+        else:
+            return x
+        
+    df['ekrano įstrižainė'] = df['ekrano įstrižainė'].apply(set_size)
+
+    df['ekrano įstrižainė'] = df['ekrano įstrižainė'].str.extract('(\d+)')
+    df['ekrano įstrižainė'] = df['ekrano įstrižainė'].apply(lambda x: float(x))
+    dfe = df[['kaina','ekrano įstrižainė' ]]
+    dfe_gr = dfe.groupby('ekrano įstrižainė').mean(numeric_only=True).reset_index()
+
+    # pigu
+    dfp.dropna(subset='Ekrano įstrižainė:', inplace=True)
+    dfp['Ekrano įstrižainė:'] = dfp['Ekrano įstrižainė:'].str.extract('(\d+)')
+    dfp['Ekrano įstrižainė:'] = dfp['Ekrano įstrižainė:'].apply(lambda x: float(x))
+    dfp_gr = dfp.groupby('Ekrano įstrižainė:').mean(numeric_only=True).reset_index()
+
+    fig, ax = plt.subplots()
+    sns.regplot(data=dfe_gr[dfe_gr['ekrano įstrižainė'] < 40], x='ekrano įstrižainė', y='kaina', ax=ax, label='Varle.lt')
+    sns.regplot(data=dfp_gr, x='Ekrano įstrižainė:', y='kaina', ax=ax, label='Pigu.lt')
+    plt.title('Kainos priklausomybė nuo ekrano įstižainės')
+    plt.legend()
+    st.pyplot(fig, use_container_width=True)
+
+    # ekrano tipai
+    SDB = sqlite3.connect('VarlePigu.db')
+    C = SDB.cursor()
+    sql="""select kaina,
+    gamintojas,
+    `ekrano tipas`,
+    `ekrano technologija`
+    from PlanseteVarle;"""
+    df_with_dubs = pd.read_sql_query(sql, con=SDB)
+
+    sql2="""select kaina,
+    `Prekės ženklas:`,
+    `Ekrano tipas:`
+    from PlansetePigu;"""
+    dfp_with_dubs = pd.read_sql_query(sql2, con=SDB)
+
+    SDB.close()
+    #  varle
+    df = df_with_dubs.drop_duplicates()
+    df['kaina'] = df['kaina'].str.extract('(\d+)')
+    df['kaina'] = df['kaina'].apply(lambda x: float(x))
+    df['ekrano tipas'].fillna(df['ekrano technologija'])
+    df['Ekranas'] = df['ekrano tipas']
+    df['saltinis'] = 'Varle.lt'
+    df_join = df[['kaina', 'Ekranas', 'saltinis']]
+    # df_join.head()
+
+    # pigu
+    dfp = dfp_with_dubs.drop_duplicates()
+    dfp['Ekranas'] = dfp['Ekrano tipas:']
+    dfp['saltinis'] = 'Pigu.lt'
+    dfp_join = dfp[['kaina', 'Ekranas', 'saltinis']]
+    # dfp_join.head()
+
+    # join tables
+    df_combined = pd.concat([df_join, dfp_join])
+    df_combined.dropna(subset='Ekranas', inplace=True)
+
+    types_counts = df_combined['Ekranas'].value_counts()
+    types_to_plot = types_counts[types_counts > 4].index
+
+    fig, ax = plt.subplots()
+    sns.boxplot(data=df_combined[df_combined['Ekranas'].isin(types_to_plot)], y='Ekranas', x='kaina', showmeans=True, showfliers=False, hue='saltinis', orient='h')
+    plt.title('Kainos pasiskirstymas nuo ekrano tipo')
+    st.pyplot(fig, use_container_width=True)
+
+    # ekrano raiska
+    SDB = sqlite3.connect('VarlePigu.db')
+    C = SDB.cursor()
+    sql="""select kaina,
+    gamintojas,
+    `ekrano raiška`,
+    raiška,
+    `ekrano raiška (pikseliais)`
+    from PlanseteVarle;"""
+    df_with_dubs = pd.read_sql_query(sql, con=SDB)
+
+    sql2="""select kaina,
+    `Prekės ženklas:`,
+    `Maksimali raiška:`
+    from PlansetePigu;"""
+    dfp_with_dubs = pd.read_sql_query(sql2, con=SDB)
+
+    SDB.close()
+    #  varle
+    df = df_with_dubs.drop_duplicates()
+    df['kaina'] = df['kaina'].str.extract('(\d+)')
+    df['kaina'] = df['kaina'].apply(lambda x: float(x))
+    for col in df.columns:
+        if col not in ['kaina', 'gamintojas']:
+            df['ekrano raiška'] = df['ekrano raiška'].fillna(df[col])
+
+
+    # Pigu
+    dfp = dfp_with_dubs.drop_duplicates()
+    dfp['ekrano raiška'] = dfp['Maksimali raiška:']
+
+    df['saltinis'] = 'Varle.lt'
+    dfp['saltinis'] = 'Pigu.lt'
+    df_join = df[['kaina', 'ekrano raiška', 'saltinis']]
+    dfp_join = dfp[['kaina', 'ekrano raiška', 'saltinis']]
+
+    # join tables
+    df_combined = pd.concat([df_join, dfp_join])
+    df_combined.dropna(subset='ekrano raiška', inplace=True)
+
+    types_counts = df_combined['ekrano raiška'].value_counts()
+    types_to_plot = types_counts[types_counts > 9].index
+
+    fig, ax = plt.subplots()
+    sns.boxplot(data=df_combined[df_combined['ekrano raiška'].isin(types_to_plot)], y='ekrano raiška', x='kaina', showmeans=True, showfliers=False, hue='saltinis', orient='h')
+    plt.title('Kainos pasiskirstymas nuo ekrano raiškos')
+    st.pyplot(fig, use_container_width=True)
+
+    # atmintis
+    SDB = sqlite3.connect('VarlePigu.db')
+    C = SDB.cursor()
+    sql="""select kaina,
+    gamintojas,
+    `vidinė atmintis (gb)`,
+    `disko atmintis`,
+    `vidinės atminties dydis`,
+    `vidinė atmintis`,
+    `vidinės atminties dydis [gb]`
+    from PlanseteVarle;"""
+    df_with_dubs = pd.read_sql_query(sql, con=SDB)
+
+    sql2="""select kaina,
+    `Vidinė atmintis:`,
+    `Prekės ženklas:`
+    from PlansetePigu;"""
+    dfp_with_dubs = pd.read_sql_query(sql2, con=SDB)
+
+    SDB.close()
+    #  varle
+
+    df = df_with_dubs.drop_duplicates()
+    df['kaina'] = df['kaina'].str.extract('(\d+)')
+    df['kaina'] = df['kaina'].apply(lambda x: float(x))
+    for col in df.columns:
+        if col not in ['kaina', 'gamintojas']:
+            df['vidinė atmintis (gb)'] = df['vidinė atmintis (gb)'].fillna(df[col])
+    df.dropna(subset='vidinė atmintis (gb)', inplace=True)
+    df['vidinė atmintis (gb)'] = df['vidinė atmintis (gb)'].str.extract('(\d+)')
+    df['vidinė atmintis (gb)'] = df['vidinė atmintis (gb)'].apply(lambda x: float(x))
+
+    # pigu
+
+    dfp = dfp_with_dubs.drop_duplicates()
+    dfp['Vidinė atmintis:'] = dfp['Vidinė atmintis:'].str.extract('(\d+)')
+    dfp['Vidinė atmintis:'] = dfp['Vidinė atmintis:'].apply(lambda x: float(x))
+    dfp.dropna(subset='Vidinė atmintis:', inplace=True)
+    df_memory = df[['kaina', 'vidinė atmintis (gb)']]
+    df_memory_gr = df_memory.groupby('vidinė atmintis (gb)').mean(numeric_only=True).reset_index()
+
+    dfp_memory = dfp[['kaina', 'Vidinė atmintis:']]
+    dfp_memory_gr = dfp_memory.groupby('Vidinė atmintis:').mean(numeric_only=True).reset_index()
+    fig, ax = plt.subplots()
+    sns.regplot(data=df_memory_gr, x='vidinė atmintis (gb)', y='kaina', ax=ax, label='Varle.lt')
+    sns.regplot(data=dfp_memory_gr, x='Vidinė atmintis:', y='kaina', ax=ax, label='Pigu.lt')
+    plt.title('Kainos priklausomybė nuo vidinės atmintis (GB)')
+    st.pyplot(fig, use_container_width=True)
+
+
+    #  RAM
+    # atmintis
+    SDB = sqlite3.connect('VarlePigu.db')
+    C = SDB.cursor()
+    sql="""select kaina,
+    gamintojas,
+    `atmintis (ram) (gb)`,
+    `operatyvioji atmintis`,
+    `operatyvioji ram atmintis`,
+    `įdiegta ram atmintis`,
+    `darbinė atmintis (ram)`,
+    `operacinės atminties dydis [gb]`,
+    `atmintis (ram)`
+
+    from PlanseteVarle;"""
+    df_with_dubs = pd.read_sql_query(sql, con=SDB)
+
+    sql2="""select kaina,
+    `Operatyvinė atmintis (RAM):`,
+    `Prekės ženklas:`
+    from PlansetePigu;"""
+    dfp_with_dubs = pd.read_sql_query(sql2, con=SDB)
+
+    SDB.close()
+    #  varle
+
+    df = df_with_dubs.drop_duplicates()
+    df['kaina'] = df['kaina'].str.extract('(\d+)')
+    df['kaina'] = df['kaina'].apply(lambda x: float(x))
+    for col in df.columns:
+        if col not in ['kaina', 'gamintojas']:
+            df['atmintis (ram) (gb)'] = df['atmintis (ram) (gb)'].fillna(df[col])
+    df.dropna(subset='atmintis (ram) (gb)', inplace=True)
+    df['atmintis (ram) (gb)'] = df['atmintis (ram) (gb)'].str.extract('(\d+)')
+    df['atmintis (ram) (gb)'] = df['atmintis (ram) (gb)'].apply(lambda x: float(x))
+
+
+    dfp = dfp_with_dubs.drop_duplicates()
+    dfp['Operatyvinė atmintis (RAM):'] = dfp['Operatyvinė atmintis (RAM):'].str.extract('(\d+)')
+    dfp['Operatyvinė atmintis (RAM):'] = dfp['Operatyvinė atmintis (RAM):'].apply(lambda x: float(x))
+    dfp.dropna(subset='Operatyvinė atmintis (RAM):', inplace=True)
+    dfp['ram'] = dfp['Operatyvinė atmintis (RAM):'].apply(lambda x: np.floor(x/1000))
+
+    df_memory = df[['kaina', 'atmintis (ram) (gb)']]
+    df_memory_gr = df_memory.groupby('atmintis (ram) (gb)').mean(numeric_only=True).reset_index()
+
+    dfp_memory = dfp[['kaina', 'ram']]
+    dfp_memory_gr = dfp_memory.groupby('ram').mean(numeric_only=True).reset_index()
+    fig, ax = plt.subplots()
+    sns.regplot(data=df_memory_gr[df_memory_gr['atmintis (ram) (gb)'] < 20], x='atmintis (ram) (gb)', y='kaina', ax=ax, label='Varle.lt')
+    sns.regplot(data=dfp_memory_gr, x='ram', y='kaina', ax=ax, label='Pigu.lt')
+    plt.title('Kainos priklausomybė nuo RAM atminties (GB)')
+    plt.legend()
+    st.pyplot(fig, use_container_width=True)
+
+
+
         
 if selected_option == 'Televizoriai':
     st.write('Informacija ruošiama')
