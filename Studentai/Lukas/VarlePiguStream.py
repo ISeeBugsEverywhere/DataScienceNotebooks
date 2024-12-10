@@ -6,6 +6,7 @@ import numpy as np
 import mysql.connector as cnt
 import matplotlib.pyplot as plt
 import sqlite3
+import re
 
 #streamlit page config: :streamlit
 st.set_page_config(page_icon=':bar_chart', page_title='DEMO STREAMLIT MAP', layout='centered')
@@ -1457,6 +1458,285 @@ if selected_option == 'Televizoriai':
     st.pyplot(fig, use_container_width=True)
     
     
+    # tele size 
+    SDB = sqlite3.connect('VarlePigu.db')
+    C = SDB.cursor()
+    sql="""select kaina,
+    gamintojas,
+    `ekrano įstrižainė`
+    from TeleVarle;"""
+    df = pd.read_sql_query(sql, con=SDB)
+
+    sql2="""select kaina,
+    `Prekės ženklas:`,
+    `Ekrano įstrižainė:`
+    from TelePigu;"""
+    dfp = pd.read_sql_query(sql2, con=SDB)
+
+    SDB.close()
+
+    df.dropna(subset='ekrano įstrižainė', inplace=True)
+    df['kaina'] = df['kaina'].apply(lambda x: float(x))
+
+    # Define a function to clean and extract the size in inches
+    def extract_inch_size(tv_size):
+        # Remove any non-numeric characters except for the quotation marks (inches)
+        tv_size = str(tv_size).lower().replace("coliu", "")  # Removing unwanted words like "coliu"
+        
+        # Match inches (e.g., "55", "43")
+        inch_match = re.search(r'(\d+)\s*(?:"|inch)', tv_size)
+        if inch_match:
+            return int(inch_match.group(1))
+        
+        # Match size in cm and convert to inches (assuming 1 inch = 2.54 cm)
+        cm_match = re.search(r'(\d+)\s*cm', tv_size)
+        if cm_match:
+            cm_value = int(cm_match.group(1))
+            return round(cm_value / 2.54)
+        
+        if len(tv_size) <= 2:
+            return int(tv_size)
+        
+        
+
+    df['size'] = df['ekrano įstrižainė'].apply(extract_inch_size)
+    df.dropna(subset='size', inplace=True)
+
+    def set_size_pigu(x):
+        if x is not None:
+            if '"' in x:
+                return float(x.split('"')[0])
+            if "''" in x:
+                return float(x.split("''")[0])
+            if '”'in x:
+                return float(x.split('”')[0])
+            
+
+    dfp['size'] = dfp['Ekrano įstrižainė:'].apply(set_size_pigu)
+
+    df_size = df[['kaina', 'size']]
+    df_size_gr = df_size.groupby('size').mean(numeric_only=True).reset_index()
+    dfp_size = dfp[['kaina', 'size']]
+    dfp_size_gr = dfp_size.groupby('size').mean(numeric_only=True).reset_index()
+
+
+    fig, ax = plt.subplots()
+    # sns.regplot(data=df_size_gr, x='size', y='kaina', ax=ax, label='Varle.lt',order=3)
+    sns.regplot(data=df_size, x='size', y='kaina', ax=ax, label='Varle.lt',order=3)
+    # sns.regplot(data=dfp_size_gr, x='size', y='kaina', ax=ax, label='Pigu.lt',order=3)
+    sns.regplot(data=dfp_size, x='size', y='kaina', ax=ax, label='Pigu.lt',order=3)
+    plt.title('Kainos priklausomybė nuo ekrano įstižainės (coliais)')
+    plt.legend()
+    st.pyplot(fig, use_container_width=True)
+
+
+    # tele max raiska 
+    SDB = sqlite3.connect('VarlePigu.db')
+    C = SDB.cursor()
+    sql="""select kaina,
+    gamintojas,
+    `ekrano raiška`
+    from TeleVarle;"""
+    df = pd.read_sql_query(sql, con=SDB)
+
+    sql2="""select kaina,
+    `Prekės ženklas:`,
+    `Maksimali raiška:`
+    from TelePigu;"""
+    dfp = pd.read_sql_query(sql2, con=SDB)
+
+    SDB.close()
+
+    df['kaina'] = df['kaina'].apply(lambda x: float(x))
+    reso_counts = df['ekrano raiška'].value_counts()
+    reso_to_plot = reso_counts[reso_counts > 5].index
+
+    reso_counts_p = dfp['Maksimali raiška:'].value_counts()
+    reso_to_plot_p = reso_counts_p[reso_counts_p > 3].index
+
+    fig, ax = plt.subplots()
+    sns.boxplot(data=df[df['ekrano raiška'].isin(reso_to_plot)], y='ekrano raiška', x='kaina', showmeans=True, showfliers=False)
+    plt.title('Kainos pasiskirstymas nuo ekrano raiškos (Varle.lt)')
+    st.pyplot(fig, use_container_width=True)
+
+    fig, ax = plt.subplots()
+    sns.boxplot(data=dfp[dfp['Maksimali raiška:'].isin(reso_to_plot_p)], y='Maksimali raiška:', x='kaina', showmeans=True, showfliers=False)
+    plt.title('Kainos pasiskirstymas nuo ekrano raiškos (Pigu.lt)')
+    st.pyplot(fig, use_container_width=True)
+
+
+    # tele ekrano tipas
+    SDB = sqlite3.connect('VarlePigu.db')
+    C = SDB.cursor()
+    sql="""select kaina,
+    gamintojas,
+    Tipas
+    from TeleVarle;"""
+    df = pd.read_sql_query(sql, con=SDB)
+
+    sql2="""select kaina,
+    `Prekės ženklas:`,
+    `Ekrano tipas:`
+    from TelePigu;"""
+    dfp = pd.read_sql_query(sql2, con=SDB)
+
+    SDB.close()
+
+    df['kaina'] = df['kaina'].apply(lambda x: float(x))
+    df.drop_duplicates()
+    df.dropna(subset='tipas', inplace=True)
+    dfp.drop_duplicates()
+    dfp.dropna(subset='Ekrano tipas:', inplace=True)
+    df['saltinis'] = 'Varle.lt'
+    dfp['saltinis'] = 'Pigu.lt'
+    df['Ekrano tipas'] = df['tipas']
+    dfp['Ekrano tipas'] = dfp['Ekrano tipas:']
+
+    df_join = df[['kaina', 'Ekrano tipas', 'saltinis']]
+    dfp_join = dfp[['kaina', 'Ekrano tipas', 'saltinis']]
+
+    df_combined = pd.concat([df_join, dfp_join])
+    tipas_counts = df['Ekrano tipas'].value_counts()
+    tipas_to_plot = tipas_counts[tipas_counts > 3].index
+
+    fig, ax = plt.subplots()
+    sns.boxplot(data=df_combined[df_combined['Ekrano tipas'].isin(tipas_to_plot)], x='Ekrano tipas', y='kaina', hue='saltinis', showmeans=True, showfliers=False)
+    plt.title('Kainos pasiskirtymas nuo ekrano tipo')
+    st.pyplot(fig, use_container_width=True)
+
+
+    # operacine pigu
+    SDB = sqlite3.connect('VarlePigu.db')
+    C = SDB.cursor()
+    sql="""select kaina,
+    `Prekės ženklas:`,
+    `Operacinė sistema:`
+
+    from TelePigu;"""
+    df = pd.read_sql_query(sql, con=SDB)
+    SDB.close()
+
+    fig, ax = plt.subplots()
+    sns.boxplot(data=df, y='Operacinė sistema:', x='kaina', showmeans=True, showfliers=False)
+    plt.title('Kainos pasiskirstymas nuo operacinės sistemos (Pigu.lt)')
+    st.pyplot(fig, use_container_width=True)
+
+
+    # lentele varle
+    SDB = sqlite3.connect('VarlePigu.db')
+    C = SDB.cursor()
+    sql="""select kaina,
+    gamintojas,
+    `ekrano įstrižainė`,
+    `ekrano raiška`,
+    Tipas
+    from TeleVarle;"""
+    df = pd.read_sql_query(sql, con=SDB)
+    SDB.close()
+    df.head()
+
+    df['kaina'] = df['kaina'].str.extract('(\d+)')
+    df['kaina'] = df['kaina'].apply(lambda x: float(x))
+
+    # # Define a function to clean and extract the size in inches
+    # def extract_inch_size(tv_size):
+    #     # Remove any non-numeric characters except for the quotation marks (inches)
+    #     tv_size = str(tv_size).lower().replace("coliu", "")  # Removing unwanted words like "coliu"
+        
+    #     # Match inches (e.g., "55", "43")
+    #     inch_match = re.search(r'(\d+)\s*(?:"|inch)', tv_size)
+    #     if inch_match:
+    #         return int(inch_match.group(1))
+        
+    #     # Match size in cm and convert to inches (assuming 1 inch = 2.54 cm)
+    #     cm_match = re.search(r'(\d+)\s*cm', tv_size)
+    #     if cm_match:
+    #         cm_value = int(cm_match.group(1))
+    #         return round(cm_value / 2.54)
+        
+    #     if len(tv_size) <= 2:
+    #         return int(tv_size)
+        
+        
+
+    df['size'] = df['ekrano įstrižainė'].apply(extract_inch_size)
+    price_bins = [0, 100, 200, 500,30000]
+    price_labels = ['iki 100', '101-200', '201-500', 'nuo 500']
+    df_data = df[['kaina', 'gamintojas', 'ekrano įstrižainė', 'ekrano raiška', 'tipas']]
+
+    df_data['price_range'] = pd.cut(df_data['kaina'], bins=price_bins, labels=price_labels, right=True)
+
+    grouped = df_data.groupby('price_range')
+    def safe_mode(x):
+        mode = x.mode()
+        return mode.iloc[0] if not mode.empty else None
+
+    # # find most comman
+    most_common_tv = grouped.agg({
+        'kaina': safe_mode,
+        'gamintojas': safe_mode,
+        'ekrano įstrižainė': safe_mode,
+        'ekrano raiška': safe_mode,
+        'tipas': safe_mode
+    }).reset_index()
+    st.write('Labiausiai tikėtinas televizorius (Varle.lt)')
+    st.write(most_common_tv)
+
+
+    # lentele pigu
+    SDB = sqlite3.connect('VarlePigu.db')
+    C = SDB.cursor()
+    sql="""select kaina,
+    `Prekės ženklas:`,
+    `Ekrano įstrižainė:`,
+    `Maksimali raiška:`,
+    `Ekrano tipas:`,
+    `Spalva:`,
+    `WiFi:`,
+    `Bluetooth:`,
+    `Operacinė sistema:`
+
+    from TelePigu;"""
+    df = pd.read_sql_query(sql, con=SDB)
+    SDB.close()
+
+    def set_size_pigu(x):
+        if x is not None:
+            if '"' in x:
+                return float(x.split('"')[0])
+            if "''" in x:
+                return float(x.split("''")[0])
+            if '”'in x:
+                return float(x.split('”')[0])
+            
+
+    df['size'] = df['Ekrano įstrižainė:'].apply(set_size_pigu)
+    price_bins = [0, 100, 200, 500,30000]
+    price_labels = ['iki 100', '101-200', '201-500', 'nuo 500']
+    df_data = df[['kaina', 'Prekės ženklas:','size','Maksimali raiška:','Ekrano tipas:','Spalva:','WiFi:','Bluetooth:','Operacinė sistema:']]
+
+    df_data['price_range'] = pd.cut(df_data['kaina'], bins=price_bins, labels=price_labels, right=True)
+
+    grouped = df_data.groupby('price_range')
+    def safe_mode(x):
+        mode = x.mode()
+        return mode.iloc[0] if not mode.empty else None
+
+    # # find most comman
+    most_common_tv = grouped.agg({
+        'kaina': safe_mode,
+        'Prekės ženklas:': safe_mode,
+        'size': safe_mode,
+        'Maksimali raiška:': safe_mode,
+        'Ekrano tipas:': safe_mode,
+        'Spalva:': safe_mode,
+        'WiFi:': safe_mode,
+        'Bluetooth:': safe_mode,
+        'Operacinė sistema:': safe_mode,
+    }).reset_index()
+    st.write('Labiausiai tikėtinas televizorius (Pigu.lt)')
+    st.write(most_common_tv)
+
     
     
     
