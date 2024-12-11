@@ -909,7 +909,7 @@ if selected_option == 'Planšetiniai kompiuteriai':
     # print(top5_middle)
     top_brands_p = top5_high_p + top5_middle_p + top5_low_p
 
-    df_brand_p = df_gamintojas_p[df_gamintojas_p['gamintojas'].isin(top_brands)]
+    df_brand_p = df_gamintojas_p[df_gamintojas_p['gamintojas'].isin(top_brands_p)]
     df_brand = df_gamintojas[df_gamintojas['gamintojas'].isin(top_brands)]
 
     df_brand['saltinis'] = 'Varle.lt'
