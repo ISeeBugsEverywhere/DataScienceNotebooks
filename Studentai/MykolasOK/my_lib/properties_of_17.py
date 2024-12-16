@@ -4,7 +4,7 @@ from typing import List, Union
 
 class properties_of:
     """
-    Klasė darbui su objektų savybėmis įvairiuose duomenų varikliuose.
+    Klasė darbui su objektų savybėmis įvairiuose duomenų varikliuose (v17).
 
     Parametrai:
         - name (str): Objekto grupės pavadinimas.
