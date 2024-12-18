@@ -1,181 +1,287 @@
-import sqlite3
-import pandas as pd
-# from pyspark.sql import SparkSession
-from typing import Union, Optional
+import random
+import time
+from typing import List, Union
 
 class properties_of:
-    def __init__(self, name: str, engine: str = "sqlite_memory", db_path: Optional[str] = None):
-        """
-        Inicijuoja objektą su pasirenkamu duomenų bazės "varikliu".
+    """
+    Klasė darbui su objektų savybėmis įvairiuose duomenų varikliuose (v17).
 
-        :param name: Objekto pavadinimas (naudojamas lentelių pavadinimams kurti).
-        :param engine: 
-            - "sqlite_memory": SQLite laikoma atmintyje.
-            - "sqlite_file": SQLite laikoma faile, reikia nurodyti `db_path`.
-            - "pandas": Pandas DataFrame kaip duomenų bazė.
-            - "pyspark": PySpark DataFrame kaip duomenų bazė.
-        :param db_path: Naudojamas tik jei `engine="sqlite_file"`, nurodo SQLite failo kelią.
-        """
+    Parametrai:
+        - name (str): Objekto grupės pavadinimas.
+        - engine (str): Naudojamas duomenų variklis ("pandas" arba "pyspark").
+        - silent (bool): Jei True, nenaudojami išvesties pranešimai.
+
+    Savybės:
+        - property_type (DataFrame): Laikomi savybių tipai.
+        - property (DataFrame): Laikomos objektų savybės.
+        - file_path (str): Paskutiniu metu skaityto ar rašyto failo kelias.
+        - file_format (str): Failo formatas (csv, parquet, feather).
+        - opened_format (str): Atidarytas lentelės formatas ("wide" arba "narrow").
+
+    Vieši metodai:
+        - add_property_type(property_id: str, description: str) -> None
+            Prideda naują savybių tipą.
+        - add_property(object_id: str, property_id: str, value: Any) -> None
+            Prideda arba atnaujina savybę konkrečiam objektui.
+        - open_wide(file_path: str, file_format: str) -> None
+            Perskaito plačią lentelę iš failo ir išsaugo failo informaciją.
+        - open_narrow(file_path: str, file_format: str) -> None
+            Perskaito siaurą lentelę iš failo ir išsaugo failo informaciją.
+        - write_wide(file_path: str, file_format: str, columns: List[str] = []) -> None
+            Išsaugo plačią lentelę į failą.
+        - write_narrow(file_path: str, file_format: str, columns: List[str] = []) -> None
+            Išsaugo siaurą lentelę į failą.
+        - get_wide_df(columns: List[str] = []) -> DataFrame
+            Grąžina plačią lentelę. Jei `columns` yra tuščias, grąžina visus stulpelius.
+        - save() -> None
+            Išsaugo duomenis į anksčiau perskaitytą failą (wide arba narrow).
+        - close() -> None
+            Uždaro PySpark sesiją ir atlaisvina atmintį (RAM).
+    """
+
+    def __init__(self, name: str, engine: str = "pandas", silent: bool = False) -> None:
+        from typing import List
+        import time
+
         self.name = name
         self.engine = engine
+        self.silent = silent
+        self.file_path = None
+        self.file_format = None
+        self.opened_format = None
 
-        if engine == "sqlite_memory":
-            self.conn = sqlite3.connect(":memory:")
-            self.cursor = self.conn.cursor()
-            self._create_tables()
-        elif engine == "sqlite_file":
-            if not db_path:
-                raise ValueError("Jei pasirenkama 'sqlite_file', turi būti nurodytas 'db_path'.")
-            self.conn = sqlite3.connect(db_path)
-            self.cursor = self.conn.cursor()
-            self._create_tables()
-        elif engine == "pandas":
-            self.df_property = pd.DataFrame(columns=["object_id", "property_id", "value"])
-            self.df_property_type = pd.DataFrame(columns=["property_id", "description"])
-        # elif engine == "pyspark":
-        #     self.spark = SparkSession.builder.master("local").appName("PropertiesDB").getOrCreate()
-        #     self.df_property = self.spark.createDataFrame([], schema="object_id STRING, property_id STRING, value STRING")
-        #     self.df_property_type = self.spark.createDataFrame([], schema="property_id STRING, description STRING")
+        if engine == "pandas":
+            import pandas as pd
+            self.pd = pd
+            self.property_type = pd.DataFrame(columns=["property_id", "description"])
+            self.property = pd.DataFrame(columns=["id", "property_id", "value"])
+        elif engine == "pyspark":
+            from pyspark.sql import SparkSession
+            self.spark = SparkSession.builder.appName("Properties").getOrCreate()
+            self.property_type = self.spark.createDataFrame([], "property_id STRING, description STRING")
+            self.property = self.spark.createDataFrame([], "id STRING, property_id STRING, value STRING")
         else:
-            raise ValueError("Nepalaikomas duomenų bazės variklis: pasirinkite 'sqlite_memory', 'sqlite_file', 'pandas' arba 'pyspark'.")
+            raise ValueError(f"Nežinomas variklis: {engine}")
 
-    def _create_tables(self) -> None:
-        """Sukuriamos lentelės SQLite duomenų bazėje."""
-        self.cursor.execute(f"""
-            CREATE TABLE IF NOT EXISTS {self.name}_property (
-                object_id TEXT,
-                property_id TEXT,
-                value TEXT,
-                PRIMARY KEY (object_id, property_id)
-            )
-        """)
-        self.cursor.execute(f"""
-            CREATE TABLE IF NOT EXISTS {self.name}_property_type (
-                property_id TEXT PRIMARY KEY,
-                description TEXT
-            )
-        """)
-        self.conn.commit()
+    def _log(self, message: str) -> None:
+        """Išveda pranešimą, jei silent=False."""
+        if not self.silent:
+            print(message)
 
     def add_property_type(self, property_id: str, description: str) -> None:
-        """Pridedamas savybės tipas."""
+        """Prideda naują savybių tipą."""
         if self.engine == "pandas":
-            if property_id not in self.df_property_type["property_id"].values:
-                self.df_property_type = pd.concat([
-                    self.df_property_type,
-                    pd.DataFrame({"property_id": [property_id], "description": [description]})
-                ], ignore_index=True)
+            new_row = self.pd.DataFrame({"property_id": [property_id], "description": [description]})
+            self.property_type = self.pd.concat([self.property_type, new_row], ignore_index=True).drop_duplicates()
         elif self.engine == "pyspark":
-            existing = self.df_property_type.filter(f"property_id = '{property_id}'").count() > 0
-            if not existing:
-                new_row = self.spark.createDataFrame([(property_id, description)], schema="property_id STRING, description STRING")
-                self.df_property_type = self.df_property_type.union(new_row)
-        else:
-            self.cursor.execute(f"""
-                INSERT OR IGNORE INTO {self.name}_property_type (property_id, description)
-                VALUES (?, ?)
-            """, (property_id, description))
-            self.conn.commit()
+            new_row = self.spark.createDataFrame([(property_id, description)], schema="property_id STRING, description STRING")
+            self.property_type = self.property_type.union(new_row)
 
-    def add_property(self, object_id: str, property_id: str, value: str, check_property_type: bool = False) -> None:
-        """Pridedama savybė konkrečiam objektui."""
+    def add_property(self, id: str, property_id: str, value: str) -> None:
+        """Prideda arba atnaujina savybę konkrečiam objektui."""
         if self.engine == "pandas":
-            if check_property_type and property_id not in self.df_property_type["property_id"].values:
-                raise ValueError(f"Savybės ID '{property_id}' nėra savybių tipų lentelėje.")
-            self.df_property = pd.concat([
-                self.df_property,
-                pd.DataFrame({"object_id": [object_id], "property_id": [property_id], "value": [value]})
-            ], ignore_index=True).drop_duplicates(subset=["object_id", "property_id"])
+            condition = (self.property["id"] == id) & (self.property["property_id"] == property_id)
+            if condition.any():
+                self.property.loc[condition, "value"] = value
+            else:
+                new_row = self.pd.DataFrame({"id": [id], "property_id": [property_id], "value": [value]})
+                self.property = self.pd.concat([self.property, new_row], ignore_index=True).drop_duplicates()
         elif self.engine == "pyspark":
-            if check_property_type:
-                existing = self.df_property_type.filter(f"property_id = '{property_id}'").count() > 0
-                if not existing:
-                    raise ValueError(f"Savybės ID '{property_id}' nėra savybių tipų lentelėje.")
-            new_row = self.spark.createDataFrame([(object_id, property_id, value)], schema="object_id STRING, property_id STRING, value STRING")
-            self.df_property = self.df_property.union(new_row)
-        else:
-            if check_property_type:
-                self.cursor.execute(f"""
-                    SELECT 1 FROM {self.name}_property_type WHERE property_id = ?
-                """, (property_id,))
-                if not self.cursor.fetchone():
-                    raise ValueError(f"Savybės ID '{property_id}' nėra savybių tipų lentelėje.")
-            self.cursor.execute(f"""
-                INSERT OR REPLACE INTO {self.name}_property (object_id, property_id, value)
-                VALUES (?, ?, ?)
-            """, (object_id, property_id, value))
-            self.conn.commit()
+            self.property = (
+                self.property.filter(f"id != '{id}' OR property_id != '{property_id}'")
+                .union(self.spark.createDataFrame([(id, property_id, value)], schema="id STRING, property_id STRING, value STRING"))
+            )
 
-    def get_properties(self) -> Union[pd.DataFrame, None]:
-        """Grąžinami tik objekto savybių duomenys."""
+    def open_narrow(self, file_path: str, file_format: str) -> None:
+        """Perskaito siaurą lentelę iš failo."""
+        start_time = time.time()
+        self.file_path = file_path
+        self.file_format = file_format
+        self.opened_format = "narrow"
         if self.engine == "pandas":
-            return self.df_property
+            if file_format == "csv":
+                self.property = self.pd.read_csv(file_path)
+            elif file_format == "parquet":
+                self.property = self.pd.read_parquet(file_path)
+            elif file_format == "feather":
+                self.property = self.pd.read_feather(file_path)
+            else:
+                raise ValueError("Nepalaikomas failo formatas.")
         elif self.engine == "pyspark":
-            return self.df_property.toPandas()
-        else:
-            self.cursor.execute(f"SELECT * FROM {self.name}_property")
-            rows = self.cursor.fetchall()
-            return pd.DataFrame(rows, columns=["object_id", "property_id", "value"])
+            if file_format in ["csv", "parquet"]:
+                self.property = self.spark.read.format(file_format).load(file_path)
+            else:
+                raise ValueError("Nepalaikomas failo formatas.")
+        self._log(f"Siauros lentelės duomenys perskaityti per {time.time() - start_time:.2f}s.")
 
-    def get_everything(self) -> Union[pd.DataFrame, None]:
-        """Grąžinamos visos savybės su jų aprašymais."""
+    def open_wide(self, file_path: str, file_format: str) -> None:
+        """Perskaito plačią lentelę iš failo ir konvertuoja ją į siaurą."""
+        start_time = time.time()
+        self.file_path = file_path
+        self.file_format = file_format
+        self.opened_format = "wide"
         if self.engine == "pandas":
-            return self.df_property.merge(self.df_property_type, on="property_id", how="left")
+            if file_format == "csv":
+                wide_df = self.pd.read_csv(file_path)
+            elif file_format == "parquet":
+                wide_df = self.pd.read_parquet(file_path)
+            elif file_format == "feather":
+                wide_df = self.pd.read_feather(file_path)
+            else:
+                raise ValueError("Nepalaikomas failo formatas.")
+            narrow_df = wide_df.melt(id_vars="id", var_name="property_id", value_name="value")
+            self.property = self.pd.concat([self.property, narrow_df], ignore_index=True).drop_duplicates()
+        self._log(f"Plačios lentelės duomenys perskaityti per {time.time() - start_time:.2f}s.")
+
+    def write_narrow(self, file_path: str, file_format: str, columns: List[str] = []) -> None:
+        """Išsaugo siaurą lentelę į failą."""
+        start_time = time.time()
+        if self.engine == "pandas":
+            narrow_df = self.property
+            if columns:
+                narrow_df = narrow_df[narrow_df["property_id"].isin(columns)]
+            if file_format == "csv":
+                narrow_df.to_csv(file_path, index=False)
+            elif file_format == "parquet":
+                narrow_df.to_parquet(file_path, index=False)
+            elif file_format == "feather":
+                narrow_df.to_feather(file_path)
+            else:
+                raise ValueError("Nepalaikomas failo formatas.")
         elif self.engine == "pyspark":
-            return self.df_property.join(self.df_property_type, "property_id", "left").toPandas()
+            if file_format in ["csv", "parquet"]:
+                narrow_df = self.property
+                narrow_df.write.mode("overwrite").format(file_format).save(file_path)
+            else:
+                raise ValueError("Nepalaikomas failo formatas.")
+        self._log(f"Siauros lentelės duomenys išsaugoti į {file_path} per {time.time() - start_time:.2f}s.")
+
+    def write_wide(self, file_path: str, file_format: str, columns: List[str] = []) -> None:
+        """Išsaugo plačią lentelę į failą."""
+        start_time = time.time()
+        if self.engine == "pandas":
+            wide_df = self.property.pivot(index="id", columns="property_id", values="value").reset_index()
+            if columns:
+                wide_df = wide_df[["id"] + columns]
+            if file_format == "csv":
+                wide_df.to_csv(file_path, index=False)
+            elif file_format == "parquet":
+                wide_df.to_parquet(file_path, index=False)
+            elif file_format == "feather":
+                wide_df.to_feather(file_path)
+            else:
+                raise ValueError("Nepalaikomas failo formatas.")
+        self._log(f"Plačios lentelės duomenys išsaugoti į {file_path} per {time.time() - start_time:.2f}s.")
+
+    def get_wide_df(self, columns: List[str] = []) -> "pd.DataFrame":
+        """Grąžina plačią lentelę."""
+        if self.engine == "pandas":
+            wide_df = self.property.pivot(index="id", columns="property_id", values="value").reset_index()
+            if columns:
+                return wide_df[["id"] + columns]
+            return wide_df
         else:
-            self.cursor.execute(f"""
-                SELECT p.object_id, p.property_id, pt.description, p.value
-                FROM {self.name}_property p
-                LEFT JOIN {self.name}_property_type pt
-                ON p.property_id = pt.property_id
-            """)
-            rows = self.cursor.fetchall()
-            return pd.DataFrame(rows, columns=["object_id", "property_id", "description", "value"])
+            raise NotImplementedError("get_wide_df palaikomas tik Pandas varikliui.")
+
+    def save(self) -> None:
+        """Išsaugo duomenis į anksčiau perskaitytą failą (wide arba narrow)."""
+        if not self.file_path or not self.file_format or not self.opened_format:
+            raise ValueError("Failo kelias, formatas ir formatas (wide/narrow) turi būti nustatyti per open_* metodus.")
+        if self.opened_format == "narrow":
+            self.write_narrow(self.file_path, self.file_format)
+        elif self.opened_format == "wide":
+            self.write_wide(self.file_path, self.file_format)
+        else:
+            raise ValueError("Nepalaikomas išsaugojimo formatas.")
 
     def close(self) -> None:
-        """Uždaromas SQLite ryšys arba PySpark sesija."""
-        if self.engine.startswith("sqlite"):
-            self.conn.close()
+        """Uždaro PySpark sesiją ir sunaikina duomenų rėmelius."""
+        if self.engine == "pandas":
+            self.property = None
+            self.property_type = None
         elif self.engine == "pyspark":
             self.spark.stop()
+            self.property = None
+            self.property_type = None
+        self._log("Klasės resursai sėkmingai atlaisvinti.")
 
+################################################################################### 
 
-def main():
-    # Demonstracija SQLite atmintyje
-    obj_memory = properties_of("knyga", engine="sqlite_memory")
-    obj_memory.add_property_type("title", "Pavadinimas")
-    obj_memory.add_property_type("metai", "Išleidimo metai")
-    obj_memory.add_property("aaa", "title", "Lapė Snapė")
-    obj_memory.add_property("bbb", "title", "Mėnuo Juodaragis")
-    obj_memory.add_property("ccc", "title", "Meškiukas")
-    print(obj_memory.get_properties())
-    print()
-    print(obj_memory.get_everything())
-    print()
-    obj_memory.close()
+def main() -> None:
+    import string
+    import os
 
-    # Pandas DF demonstracija
-    obj_pandas = properties_of("knyga", engine="pandas")
-    obj_pandas.add_property_type("title", "Pavadinimas")
-    obj_pandas.add_property_type("metai", "Išleidimo metai")
-    obj_pandas.add_property("111-222-333", "title", "Panda Bamba")
-    obj_pandas.add_property("222-333-111", "title", "Mėnuo Beragis")
-    obj_pandas.add_property("333-111-222", "title", "Kurmis")
-    obj_pandas.add_property("111-222-333", "metai", "1900")
-    obj_pandas.add_property("222-333-111", "metai", "1999")
-    obj_pandas.add_property("333-111-222", "metai", "2020")
-    print(obj_pandas.get_properties())
-    print()
-    print(obj_pandas.get_everything())
-    print()
+    # NATO fonetinės abėcėlės sąrašas
+    nato_phonetic_alphabet = [
+        "Alpha", "Bravo", "Charlie", "Delta", "Echo", 
+        "Foxtrot", "Golf", "Hotel", "India", "Juliett", 
+        "Kilo", "Lima", "Mike", "November", "Oscar", "Papa", 
+        "Quebec", "Romeo", "Sierra", "Tango", "Uniform", 
+        "Victor", "Whiskey", "X-ray", "Yankee", "Zulu"
+    ]
 
-    # PySpark DF demonstracija
-    # obj_pyspark = properties_of("knyga", engine="pyspark")
-    # obj_pyspark.add_property_type("title", "Pavadinimas")
-    # obj_pyspark.add_property("111-222-333-PySp", "title", "Lapė Snapė")
-    # obj_pyspark.df_property.show()
+    print("\nTestuojame Pandas variklį")
+    pandas_obj = properties_of("pandas_test_objects", engine="pandas")
 
+    # Sukuriamas savybių DF
+    for phonetic in nato_phonetic_alphabet:
+        pandas_obj.add_property_type(property_id=phonetic.lower(), description=f"Savybė {phonetic}")
+
+    num_objects = 2_000
+    print(f'Generuojami {num_objects} objektų su atsitiktinėmis savybėmis')
+    for i in range(1, num_objects + 1):
+        object_id = f"obj_{i}"
+        for _ in range(3):  # Trijų savybių priskyrimas
+            property_id = random.choice(nato_phonetic_alphabet).lower()
+            value = ''.join(random.choices(string.ascii_letters + string.digits, k=10))
+            pandas_obj.add_property(object_id, property_id, value)
+
+    pandas_formats = ["csv", "parquet", "feather"]
+    for fmt in pandas_formats:
+        print(f'\n{fmt}')
+        wide_filepath = f"pandas_test_wide.{fmt}"
+        narrow_filepath = f"pandas_test_narrow.{fmt}"
+
+        # print(f'Eksportuojame {wide_filepath}')
+        pandas_obj.export_to_wide(wide_filepath, file_format=fmt)
+        # print(f'Eksportuojame {narrow_filepath}')
+        pandas_obj.export_to_narrow(narrow_filepath, file_format=fmt)
+
+        # print(f'Importuojame {wide_filepath}')
+        pandas_obj.import_from_wide(wide_filepath, file_format=fmt)
+        # print(f'Importuojame {narrow_filepath}')
+        pandas_obj.import_from_narrow(narrow_filepath, file_format=fmt)
+
+    pandas_obj.close()
+
+    print("\nTestuojame PySpark variklį (tik su narrow lentelėmis)")
+    num_objects = 10
+    print(f'Generuojami {num_objects} objektų su atsitiktinėmis savybėmis')
+    pyspark_obj = properties_of("pyspark_test_objects", engine="pyspark")
+
+    # Įrašomos savybės
+    for phonetic in nato_phonetic_alphabet:
+        pyspark_obj.add_property_type(property_id=phonetic.lower(), description=f"Savybė {phonetic}")
+
+    for i in range(1, num_objects + 1):
+        object_id = f"obj_{i}"
+        for _ in range(3):  # Trijų savybių priskyrimas
+            property_id = random.choice(nato_phonetic_alphabet).lower()
+            value = ''.join(random.choices(string.ascii_letters+string.digits+string.punctuation,k=10))
+            pyspark_obj.add_property(object_id, property_id, value)
+
+    pyspark_formats = ["csv", "parquet"]
+    for fmt in pyspark_formats:
+        print(f'\n{fmt}')
+        narrow_filepath = f"pyspark_test_narrow.{fmt}"
+
+        # print(f'Eksportuojame {narrow_filepath}')
+        pyspark_obj.export_to_narrow(narrow_filepath, file_format=fmt)
+
+        # print(f'Importuojame {narrow_filepath}')
+        pyspark_obj.import_from_narrow(narrow_filepath, file_format=fmt)
+
+    pyspark_obj.close()
 
 if __name__ == "__main__":
     main()
