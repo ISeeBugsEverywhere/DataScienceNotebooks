@@ -92,6 +92,9 @@ selected_irengimas = st.selectbox('Pasirinkite įrengimą', uniq_irengimas)
 selected_irengimas_index = encoder.transform([selected_irengimas])[0]
 st.write(f'You selected: {selected_irengimas} (Encoded label: {selected_irengimas_index})')
 
+selected_area = st.slider("Pasirinkite plotą:", min_value=0, max_value=350, step=2)
+selected_amz = st.slider("Pasirinkite pastato amžių:", min_value=0, max_value=150, step=1)
+
 uniq_kamb = aruodas['Kambarių sk.:'].unique()
 selected_kamb = st.selectbox('Pasirinkite kambarių skaičių', uniq_kamb)
 
@@ -119,7 +122,7 @@ selected_austu_sk = st.selectbox('Pasirinkite kiek namas turi aukštų', uniq_au
 # l = LabelEncoder().fit_transform(aruodas['Įrengimas:'])
 # aruodas['Įrengimas:'] = l
 
-X = aruodas.drop(columns=['kaina', 'kv_kaina','miestas','rajonas','gatve', 'Pastato tipas:','Šildymas:' ,'Įrengimas:'])
+X = aruodas.drop(columns=['kaina','kv_kaina','miestas','rajonas','gatve', 'Pastato tipas:','Šildymas:' ,'Įrengimas:'])
 y = aruodas['kaina'].values
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=42)
@@ -143,9 +146,11 @@ Aukstu_s = selected_austu_sk
 Pastato_tipas = selected_tipas_index
 sildymas = selected_sildymas_index
 irengimas = selected_irengimas_index
-area = 50           # pasidaryti pasirinkimus
-amz = 1             # pasidaryti pasirinkimus
+area = selected_area           # pasidaryti pasirinkimus
+amz = selected_amz            # pasidaryti pasirinkimus
 
 
-ats = fit.predict(np.reshape([miestas, rajonas, gatve, Kambariu_sk, aukstas, Aukstu_s, Pastato_tipas, sildymas, irengimas, area, amz], (1, -1)))
-print(f'mpg: {float(ats):.2f}')
+# Create a button in Streamlit
+if st.button('skaičiuoti'):
+    ats = fit.predict(np.reshape([miestas, rajonas, gatve, Kambariu_sk, aukstas, Aukstu_s, Pastato_tipas, sildymas, irengimas, area, amz], (1, -1)))
+    st.write(f'Tikėtina buto kaina:: {float(ats):.2f}')
