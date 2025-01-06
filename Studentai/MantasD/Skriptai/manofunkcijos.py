@@ -442,3 +442,31 @@ def get_coordinates(address):
     else:
         print("Error:", response.status_code)
         return None
+    
+def save_dataframe_to_sqlite(df, db_name, table_name, if_exists="replace"):
+    import sqlite3
+    """
+    Įrašo DataFrame į SQLite duomenų bazę.
+
+    Args:
+        df (pd.DataFrame): Duomenys, kuriuos reikia įrašyti.
+        db_name (str): SQLite duomenų bazės failo pavadinimas.
+        table_name (str): Lentelės pavadinimas, kur bus įrašyti duomenys.
+        if_exists (str): Veiksmas, jei lentelė jau egzistuoja. 
+                         Galimi variantai: 'fail', 'replace', 'append'.
+                         Numatytoji reikšmė yra 'replace'.
+
+    Returns:
+        None
+    """
+    try:
+        # Sukuriamas ryšys su SQLite duomenų baze
+        conn = sqlite3.connect(db_name)
+        # Duomenų įrašymas į nurodytą lentelę
+        df.to_sql(table_name, conn, if_exists=if_exists, index=False)
+        print(f"DataFrame sėkmingai įrašytas į '{db_name}' duomenų bazės '{table_name}' lentelę.")
+    except Exception as e:
+        print(f"Klaida įrašant DataFrame į SQLite: {e}")
+    finally:
+        # Uždaromas ryšys su duomenų baze
+        conn.close()
