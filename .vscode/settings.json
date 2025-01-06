@@ -1,0 +1,12 @@
+{
+    "github.copilot.chat.completionContext.typescript.mode": "",
+    "github.copilot.chat.startDebugging.enabled": true,
+    "github.copilot.renameSuggestions.triggerAutomatically": false,
+    "github.copilot.editor.enableCodeActions": false,
+    "github.copilot.advanced": {
+        
+
+        "debug.testOverrideCapiUrl": ""
+    },
+    "github.copilot.chat.codeGeneration.useInstructionFiles": false
+}
