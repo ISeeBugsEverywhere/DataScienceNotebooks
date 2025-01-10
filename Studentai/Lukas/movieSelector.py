@@ -39,6 +39,7 @@ def load_and_combine_data():
     # Merge the DataFrames on 'movieId'
     merged_df = pd.merge(ratings_gr1, movie_tags_df, on='movieId', how='inner')
     combined_movies = pd.merge(merged_df, movies, on='movieId', how='inner')
+    combined_movies['tags'] = combined_movies['tags'].apply(lambda tag_list: [str(tag).lower() for tag in tag_list])
     return combined_movies
 
 moviesdf = load_and_combine_data()
@@ -59,8 +60,9 @@ min_rating, max_rating = st.slider(
     step=0.5
 )
 
-selected_genre = st.multiselect('Select movie genre:', unique_genres)
 selected_tag= st.multiselect('Select movie tag:', unique_tags)
+selected_genre = st.multiselect('Select movie genre:', unique_genres)
+
 
 
 # Create a button in Streamlit
@@ -68,14 +70,20 @@ if st.button('Ieškoti'):
     # kai nuspaudžiamas mygtukas
     st.write(f"Selected genres: {selected_genre}")
     st.write(f"selected tags: {selected_tag}")
+    
+    moviesdf = moviesdf[(moviesdf['rating_mean'] >= min_rating) & (moviesdf['rating_mean'] <= max_rating)]
 
-    genres_to_filter = selected_genre
+    if selected_genre:
+        genres_to_filter = selected_genre
+        # Filter movies that have all genres in the genres column
+        moviesdf = moviesdf[moviesdf['genres'].apply(lambda x: all(genre in x for genre in genres_to_filter))]
 
-    # Filter movies that have all genres in the genres column
-    movies_by_genre = moviesdf[moviesdf['genres'].apply(lambda x: all(genre in x for genre in genres_to_filter))]
+    if selected_tag:
+        tags_to_filter = selected_tag
+        moviesdf = moviesdf[moviesdf['tags'].apply(lambda tags: any(tag in tags for tag in tags_to_filter))]
+        
+    sorted_movies = moviesdf.sort_values(by='rating_mean', ascending=False)
+    sorted_movies = sorted_movies[sorted_movies['rating_count'] >= 1000]
 
-    tags_to_filter = selected_tag
-    movies_by_tags = movies_by_genre[movies_by_genre['tags'].apply(lambda tags: any(tag in tags for tag in tags_to_filter))]
-
-    st.dataframe(movies_by_tags)
+    st.dataframe(sorted_movies)
 
