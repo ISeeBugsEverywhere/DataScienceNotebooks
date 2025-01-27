@@ -1,0 +1,3 @@
+Čia yra aplankas, kurio failai išsaugomi GIT ignoruojant jų tipą.
+Tai gali būti, pvz., CSV failai, kuriuos noriu išaugoti tarp sesijų.
+Sukurta 2025-01-27 (MOK)
