@@ -4,6 +4,9 @@
 *.feather
 *.csv
 
+# Išsaugau apdorotus duomenis (MOK, 2025-01-27)
+!MykolasOK/csv_git/*.csv
+
 # Vaizdo formatai (MOK, 2024-12-07)
 *.jpg
 *.jpeg
