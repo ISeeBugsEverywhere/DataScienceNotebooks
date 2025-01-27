@@ -5,7 +5,8 @@
 *.csv
 
 # Išsaugau apdorotus duomenis (MOK, 2025-01-27)
-!MykolasOK/csv_git/*.csv
+!MykolasOK/git_copy/**
+!git_copy/**
 
 # Vaizdo formatai (MOK, 2024-12-07)
 *.jpg
