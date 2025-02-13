@@ -1,3 +1,17 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+import sqlite3
+import requests
+import json
+import os
+import re
+import datetime
+import time
+import random
+import string
+
 def pout(a, limit=5):
     if len(a) > limit:
         print(f'Rodoma {limit} eilutės iš {len(a)}')
