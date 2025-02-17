@@ -1,3 +1,17 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+import sqlite3
+import requests
+import json
+import os
+import re
+import datetime
+import time
+import random
+import string
+
 def pout(a, limit=5):
     if len(a) > limit:
         print(f'Rodoma {limit} eilutės iš {len(a)}')
@@ -470,3 +484,43 @@ def save_dataframe_to_sqlite(df, db_name, table_name, if_exists="replace"):
     finally:
         # Uždaromas ryšys su duomenų baze
         conn.close()
+        
+        
+class SimpleAverageRegressor:
+    import pandas as pd
+    import numpy as np
+    def __init__(self):
+        self.data = None
+
+    def fit(self, X: pd.DataFrame, y: pd.Series):
+        import pandas as pd
+        import numpy as np
+        if not isinstance(X, pd.DataFrame):
+            raise ValueError("X turi būti pandas DataFrame objektas.")
+        if not isinstance(y, pd.Series):
+            raise ValueError("y turi būti pandas Series objektas.")
+        
+        self.data = X.copy()
+        self.data['target'] = y.values
+
+    def predict(self, X: pd.DataFrame) -> np.ndarray:
+        import pandas as pd
+        import numpy as np
+        if self.data is None:
+            raise ValueError("Modelis dar nebuvo apmokytas. Naudokite fit() metodą.")
+
+        if not isinstance(X, pd.DataFrame):
+            raise ValueError("X turi būti pandas DataFrame objektas.")
+
+        predictions = []
+        for _, row in X.iterrows():
+            filtered_data = self.data
+            for col in X.columns:
+                filtered_data = filtered_data[filtered_data[col] == row[col]]
+
+            if not filtered_data.empty:
+                predictions.append(filtered_data['target'].mean())
+            else:
+                predictions.append(np.nan)
+
+        return np.array(predictions)
